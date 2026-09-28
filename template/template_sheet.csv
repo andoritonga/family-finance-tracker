@@ -1,0 +1,15 @@
+No,Pengeluaran,Budget,Aktual,Selisih,Checklist,Posisi,Keterangan
+1,Listrik,500000,500000,=C2-D2,TRUE,Bank A,Tagihan PLN bulanan
+2,Internet & Wifi,350000,350000,=C3-D3,TRUE,Bank A,Langganan wifi
+3,Belanja Bulanan,1500000,1400000,=C4-D4,FALSE,Cash,Kebutuhan dapur & rumah
+4,Belanja Mingguan,800000,800000,=C5-D5,TRUE,Cash,Sayur dan lauk
+5,Transportasi / Bensin,400000,400000,=C6-D6,TRUE,Bank B,Operasional harian
+6,Dana Darurat,500000,500000,=C7-D7,TRUE,Tabungan,Alokasi tabungan
+,,,,,,,
+,TOTAL,=SUM(C2:C7),=SUM(D2:D7),=SUM(E2:E7),,,
+,,,,,,,
+,Posisi,Budget,Aktual,Selisih,,,
+,Bank A,=SUMIF(G2:G7; "Bank A"; C2:C7),=SUMIF(G2:G7; "Bank A"; D2:D7),=SUMIF(G2:G7; "Bank A"; E2:E7),,,
+,Bank B,=SUMIF(G2:G7; "Bank B"; C2:C7),=SUMIF(G2:G7; "Bank B"; D2:D7),=SUMIF(G2:G7; "Bank B"; E2:E7),,,
+,Cash,=SUMIF(G2:G7; "Cash"; C2:C7),=SUMIF(G2:G7; "Cash"; D2:D7),=SUMIF(G2:G7; "Cash"; E2:E7),,,
+,Tabungan,=SUMIF(G2:G7; "Tabungan"; C2:C7),=SUMIF(G2:G7; "Tabungan"; D2:D7),=SUMIF(G2:G7; "Tabungan"; E2:E7),,,
