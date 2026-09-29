@@ -63,14 +63,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Sheet ${targetName} already exists` }, { status: 400 });
     }
     
-    // 1. Fetch source data
-    const sourceDataRes = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `'${source!.name}'!A:H`,
-    });
+    // 1. Fetch source data (both formatted and formulas)
+    const [sourceDataRes, sourceFormulaRes] = await Promise.all([
+      sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${source!.name}'!A:H`,
+        valueRenderOption: 'FORMATTED_VALUE',
+      }),
+      sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${source!.name}'!A:H`,
+        valueRenderOption: 'FORMULA',
+      }),
+    ]);
     
     const rows = sourceDataRes.data.values || [];
-    const { items } = parseSheetData(rows);
+    const formulaRows = sourceFormulaRes.data.values || [];
+    const { items, savingsInfo: sourceSavingsInfo } = parseSheetData(rows, formulaRows);
     
     // 2. Create new sheet
     await sheets.spreadsheets.batchUpdate({
@@ -117,15 +126,35 @@ export async function POST(request: NextRequest) {
     // Total Row
     const totalRow = rowIndex;
     targetValues.push([
+      'Jumlah', 
       '', 
-      'TOTAL', 
       `=SUM(C2:C${rowIndex-2})`, 
       `=SUM(D2:D${rowIndex-2})`, 
-      `=SUM(E2:E${rowIndex-2})`, 
+      `=C${totalRow}-D${totalRow}`, 
       '', '', ''
     ]);
     rowIndex++;
     
+    // Blank row
+    targetValues.push(['', '', '', '', '', '', '', '']);
+    rowIndex++;
+
+    // Nabung Row
+    const nabungFormulaExpr = sourceSavingsInfo?.incomeFormula || '19340000';
+    const nabungTargetAccount = sourceSavingsInfo?.targetAccount || 'Blu Saving Fani';
+    const nabungKeterangan = sourceSavingsInfo?.keterangan || 'Pocket Harta';
+    targetValues.push([
+      'Nabung',
+      '',
+      `=(${nabungFormulaExpr})-C${totalRow}`,
+      nabungTargetAccount,
+      '',
+      '',
+      nabungKeterangan,
+      ''
+    ]);
+    rowIndex++;
+
     // Blank row
     targetValues.push(['', '', '', '', '', '', '', '']);
     rowIndex++;

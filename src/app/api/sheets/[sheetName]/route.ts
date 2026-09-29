@@ -16,13 +16,22 @@ export async function GET(
     }
 
     const sheets = getSheets();
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `'${sheetName}'!A:H`,
-    });
+    const [fmtRes, fmlRes] = await Promise.all([
+      sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${sheetName}'!A:H`,
+        valueRenderOption: 'FORMATTED_VALUE',
+      }),
+      sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${sheetName}'!A:H`,
+        valueRenderOption: 'FORMULA',
+      }),
+    ]);
 
-    const rows = response.data.values || [];
-    const { items, positionSummaries } = parseSheetData(rows);
+    const rows = fmtRes.data.values || [];
+    const formulaRows = fmlRes.data.values || [];
+    const { items, positionSummaries, savingsInfo } = parseSheetData(rows, formulaRows);
 
     let totalBudget = 0;
     let totalAktual = 0;
@@ -40,6 +49,7 @@ export async function GET(
       year: parsedName.year,
       items,
       positionSummaries,
+      savingsInfo,
       totalBudget,
       totalAktual,
       totalSelisih
@@ -64,6 +74,88 @@ export async function PUT(
     const sheetName = decodeURIComponent(rawSheetName);
     const body = await request.json();
     
+    // Check if this is an Income & Savings update
+    if (body.action === 'updateIncome' || body.income !== undefined || body.incomeFormula !== undefined) {
+      const sheets = getSheets();
+      const [fmtRes, fmlRes] = await Promise.all([
+        sheets.spreadsheets.values.get({
+          spreadsheetId: SPREADSHEET_ID,
+          range: `'${sheetName}'!A:H`,
+          valueRenderOption: 'FORMATTED_VALUE',
+        }),
+        sheets.spreadsheets.values.get({
+          spreadsheetId: SPREADSHEET_ID,
+          range: `'${sheetName}'!A:H`,
+          valueRenderOption: 'FORMULA',
+        }),
+      ]);
+
+      const rows = fmtRes.data.values || [];
+      const formulaRows = fmlRes.data.values || [];
+      const { savingsInfo } = parseSheetData(rows, formulaRows);
+
+      let totalRowNumber = 35;
+      for (let i = 0; i < rows.length; i++) {
+        const c0 = (rows[i]?.[0] || '').toLowerCase();
+        const c1 = (rows[i]?.[1] || '').toLowerCase();
+        if (c0 === 'jumlah' || c0 === 'total' || c1 === 'jumlah' || c1 === 'total') {
+          totalRowNumber = i + 1;
+          break;
+        }
+      }
+
+      let cleanExpr = '';
+      if (body.incomeFormula && typeof body.incomeFormula === 'string') {
+        cleanExpr = body.incomeFormula.replace(/^=/, '').trim();
+      } else if (body.income !== undefined) {
+        cleanExpr = String(body.income);
+      }
+
+      const targetAccount = body.targetAccount || savingsInfo?.targetAccount || 'Blu Saving Fani';
+      const keterangan = body.keterangan || savingsInfo?.keterangan || 'Pocket Harta';
+
+      let nabungRowNumber = (savingsInfo?.savingsRowIndex !== undefined) ? savingsInfo.savingsRowIndex + 1 : 0;
+
+      if (nabungRowNumber > 0) {
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: SPREADSHEET_ID,
+          range: `'${sheetName}'!A${nabungRowNumber}:G${nabungRowNumber}`,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: [[
+              'Nabung',
+              '',
+              `=(${cleanExpr})-C${totalRowNumber}`,
+              targetAccount,
+              '',
+              '',
+              keterangan,
+            ]],
+          },
+        });
+      } else {
+        nabungRowNumber = totalRowNumber + 2;
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: SPREADSHEET_ID,
+          range: `'${sheetName}'!A${nabungRowNumber}:G${nabungRowNumber}`,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: [[
+              'Nabung',
+              '',
+              `=(${cleanExpr})-C${totalRowNumber}`,
+              targetAccount,
+              '',
+              '',
+              keterangan,
+            ]],
+          },
+        });
+      }
+
+      return NextResponse.json({ success: true, message: 'Income and savings updated successfully' });
+    }
+
     const { rowIndex, pengeluaran, budget, aktual, checklist, posisi, keterangan } = body;
     
     if (typeof rowIndex !== 'number') {

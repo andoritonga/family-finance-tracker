@@ -9,6 +9,16 @@ export interface ExpenseItem {
   keterangan: string;
 }
 
+export interface SavingsInfo {
+  nominal: number;
+  targetAccount: string;
+  keterangan: string;
+  income: number;
+  incomeFormula?: string;
+  savingsRowIndex?: number;
+  totalRowIndex?: number;
+}
+
 export interface MonthlySheet {
   name: string;  // e.g. 'September 2026'
   month: number; // 1-12
@@ -18,6 +28,7 @@ export interface MonthlySheet {
   totalAktual: number;
   totalSelisih: number;
   positionSummaries?: PositionSummary[];
+  savingsInfo?: SavingsInfo | null;
 }
 
 export interface PositionSummary {

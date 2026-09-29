@@ -60,6 +60,8 @@ export async function GET() {
       budget: number;
       aktual: number;
       selisih: number;
+      income?: number;
+      savings?: number;
       percentUsed: number;
       itemCount: number;
       isSurplus: boolean;
@@ -89,12 +91,14 @@ export async function GET() {
     let totalAnnualBudget = 0;
     let totalAnnualAktual = 0;
     let totalAnnualSelisih = 0;
+    let totalAnnualIncome = 0;
+    let totalAnnualSavings = 0;
     let surplusMonthsCount = 0;
 
     // Process each month's data
     validMonthlySheets.forEach((sheetInfo, idx) => {
       const rows = valueRanges[idx]?.values || [];
-      const { items } = parseSheetData(rows);
+      const { items, savingsInfo } = parseSheetData(rows);
 
       let mBudget = 0;
       let mAktual = 0;
@@ -149,9 +153,14 @@ export async function GET() {
         pObj.totalSelisih += item.selisih || 0;
       });
 
+      const mIncome = savingsInfo?.income || (savingsInfo?.nominal ? savingsInfo.nominal + mBudget : mBudget);
+      const mSavings = savingsInfo?.nominal || Math.max(0, mIncome - mBudget);
+
       totalAnnualBudget += mBudget;
       totalAnnualAktual += mAktual;
       totalAnnualSelisih += mSelisih;
+      totalAnnualIncome += mIncome;
+      totalAnnualSavings += mSavings;
 
       const isSurplus = mSelisih >= 0;
       if (isSurplus) surplusMonthsCount++;
@@ -165,6 +174,8 @@ export async function GET() {
         budget: mBudget,
         aktual: mAktual,
         selisih: mSelisih,
+        income: mIncome,
+        savings: mSavings,
         percentUsed,
         itemCount: items.length,
         isSurplus,
@@ -220,14 +231,23 @@ export async function GET() {
       }))
       .sort((a, b) => (b.totalAktual || b.totalBudget) - (a.totalAktual || a.totalBudget));
 
+    const avgMonthlyIncome = totalMonths > 0 ? totalAnnualIncome / totalMonths : 0;
+    const avgMonthlySavings = totalMonths > 0 ? totalAnnualSavings / totalMonths : 0;
+    const savingsRate = totalAnnualIncome > 0 ? (totalAnnualSavings / totalAnnualIncome) * 100 : 0;
+
     return NextResponse.json({
       kpi: {
         totalMonths,
+        totalAnnualIncome,
+        totalAnnualSavings,
         totalAnnualBudget,
         totalAnnualAktual,
         totalAnnualSelisih,
         avgMonthlySpend,
         avgMonthlyBudget,
+        avgMonthlyIncome,
+        avgMonthlySavings,
+        savingsRate: Number(savingsRate.toFixed(1)),
         disciplineRate,
         lowestSpendMonth: {
           name: lowestSpendMonth.name,

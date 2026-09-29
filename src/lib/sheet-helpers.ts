@@ -1,4 +1,4 @@
-import { ExpenseItem, PositionSummary } from './types';
+import { ExpenseItem, PositionSummary, SavingsInfo } from './types';
 
 const MONTH_NAMES = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
@@ -43,11 +43,44 @@ export function parseSheetName(name: string): { month: number; year: number } | 
   return { month: monthIndex + 1, year };
 }
 
-export function parseSheetData(rows: string[][]): { items: ExpenseItem[], positionSummaries: PositionSummary[] } {
+export function parseNabungFormula(formulaStr: string): { income: number; incomeFormula: string; totalCellRow?: number } | null {
+  if (!formulaStr || typeof formulaStr !== 'string') return null;
+  const match = formulaStr.match(/^=\s*\((.+)\)\s*-\s*[A-Z]+(\d+)/i) ||
+                formulaStr.match(/^=\s*(.+)\s*-\s*[A-Z]+(\d+)/i);
+  if (match) {
+    const expr = match[1].trim();
+    if (/^[0-9+\-*/.\s]+$/.test(expr)) {
+      try {
+        const val = Function(`'use strict'; return (${expr})`)();
+        if (typeof val === 'number' && !isNaN(val)) {
+          return {
+            income: val,
+            incomeFormula: expr,
+            totalCellRow: match[2] ? parseInt(match[2], 10) : undefined
+          };
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+  return null;
+}
+
+export function parseSheetData(
+  rows: string[][],
+  formulaRows?: (string | number)[][]
+): {
+  items: ExpenseItem[];
+  positionSummaries: PositionSummary[];
+  savingsInfo: SavingsInfo | null;
+} {
   const items: ExpenseItem[] = [];
   const positionSummaries: PositionSummary[] = [];
+  let savingsInfo: SavingsInfo | null = null;
+  let totalRowIndex: number | undefined;
   
-  if (!rows || rows.length <= 1) return { items, positionSummaries };
+  if (!rows || rows.length <= 1) return { items, positionSummaries, savingsInfo };
   
   let isParsingItems = true;
   let isParsingPositions = false;
@@ -65,6 +98,9 @@ export function parseSheetData(rows: string[][]): { items: ExpenseItem[], positi
       
       if (!isItemNo || isTotalWord || !col0) {
         isParsingItems = false;
+        if (/^(jumlah|total)$/i.test(col0) || /^(jumlah|total)$/i.test(col1)) {
+          totalRowIndex = i;
+        }
       } else {
         items.push({
           no: parseInt(col0, 10),
@@ -78,6 +114,41 @@ export function parseSheetData(rows: string[][]): { items: ExpenseItem[], positi
         });
         continue;
       }
+    }
+    
+    // Check for Nabung row
+    if (col0.toLowerCase().includes('nabung')) {
+      const nominal = parseRupiah(row[2] || '');
+      const targetAccount = (row[3] || '').trim();
+      const keterangan = (row[6] || row[7] || '').trim();
+      
+      let income = 0;
+      let incomeFormula = '';
+      
+      const rawFormula = formulaRows && formulaRows[i] && formulaRows[i][2] !== undefined
+        ? String(formulaRows[i][2])
+        : '';
+        
+      const parsedFormula = parseNabungFormula(rawFormula);
+      if (parsedFormula) {
+        income = parsedFormula.income;
+        incomeFormula = parsedFormula.incomeFormula;
+      } else {
+        const totalItemsBudget = items.reduce((sum, item) => sum + item.budget, 0);
+        income = nominal + totalItemsBudget;
+        incomeFormula = income.toString();
+      }
+      
+      savingsInfo = {
+        nominal,
+        targetAccount,
+        keterangan,
+        income,
+        incomeFormula,
+        savingsRowIndex: i,
+        totalRowIndex,
+      };
+      continue;
     }
     
     // Position Section
@@ -100,5 +171,5 @@ export function parseSheetData(rows: string[][]): { items: ExpenseItem[], positi
     }
   }
   
-  return { items, positionSummaries };
+  return { items, positionSummaries, savingsInfo };
 }

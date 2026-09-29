@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { SummaryCards } from '@/components/SummaryCards';
 import { PositionSummaryTable } from '@/components/PositionSummaryTable';
 import { GenerateModal } from '@/components/GenerateModal';
+import { SavingsCard } from '@/components/SavingsCard';
+import { EditIncomeModal } from '@/components/EditIncomeModal';
 import { Navbar } from '@/components/Navbar';
 import { MonthlySheet } from '@/lib/types';
 
@@ -19,6 +21,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showEditIncomeModal, setShowEditIncomeModal] = useState(false);
   const [selectedMonthName, setSelectedMonthName] = useState<string>('');
   const [currentSheet, setCurrentSheet] = useState<MonthlySheet | null>(null);
 
@@ -138,6 +141,15 @@ export default function Dashboard() {
                 totalCount={totalItemsCount}
               />
 
+              {/* Cashflow & Savings Card */}
+              <div className="mt-6">
+                <SavingsCard
+                  savingsInfo={currentSheet.savingsInfo}
+                  totalBudget={currentSheet.totalBudget}
+                  onOpenEditModal={() => setShowEditIncomeModal(true)}
+                />
+              </div>
+
               {/* Orderly Breakdown per Posisi / Rekening */}
               {currentSheet.positionSummaries && currentSheet.positionSummaries.length > 0 && (
                 <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700/60 space-y-4">
@@ -219,6 +231,21 @@ export default function Dashboard() {
             </div>
           </section>
         </>
+      )}
+
+      {/* Edit Income & Savings Modal */}
+      {showEditIncomeModal && currentSheet && (
+        <EditIncomeModal
+          isOpen={showEditIncomeModal}
+          sheetName={currentSheet.name}
+          currentIncomeFormula={currentSheet.savingsInfo?.incomeFormula}
+          currentIncome={currentSheet.savingsInfo?.income}
+          currentAccount={currentSheet.savingsInfo?.targetAccount}
+          currentKeterangan={currentSheet.savingsInfo?.keterangan}
+          totalBudget={currentSheet.totalBudget}
+          onClose={() => setShowEditIncomeModal(false)}
+          onSuccess={() => fetchCurrentSheet(currentSheet.name)}
+        />
       )}
 
       {showModal && (

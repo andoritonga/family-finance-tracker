@@ -12,6 +12,8 @@ interface MonthlyTrend {
   budget: number;
   aktual: number;
   selisih: number;
+  income?: number;
+  savings?: number;
   percentUsed: number;
   itemCount: number;
   isSurplus: boolean;
@@ -42,8 +44,13 @@ interface AnalyticsData {
     totalAnnualBudget: number;
     totalAnnualAktual: number;
     totalAnnualSelisih: number;
+    totalAnnualIncome?: number;
+    totalAnnualSavings?: number;
     avgMonthlySpend: number;
     avgMonthlyBudget: number;
+    avgMonthlyIncome?: number;
+    avgMonthlySavings?: number;
+    savingsRate?: number;
     disciplineRate: number;
     lowestSpendMonth: { name: string; aktual: number };
     highestSpendMonth: { name: string; aktual: number };
@@ -184,34 +191,24 @@ export default function AnalyticsPage() {
               </p>
             </div>
 
-            {/* Card 2: Akumulasi Surplus */}
+            {/* Card 2: Akumulasi Alokasi Tabungan */}
             <div className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Total Sisa / Surplus
+                  Total Alokasi Tabungan
                 </span>
-                <span className="text-lg">🛡️</span>
+                <span className="text-lg">🏦</span>
               </div>
-              <p
-                className={`text-2xl font-bold tabular-nums tracking-tight ${
-                  data.kpi.totalAnnualSelisih >= 0
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-rose-600 dark:text-rose-400'
-                }`}
-              >
-                {formatRupiah(Math.abs(data.kpi.totalAnnualSelisih))}
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">
+                {formatRupiah(data.kpi.totalAnnualSavings || 0)}
               </p>
-              <div className="mt-1 flex items-center gap-1.5">
-                <span
-                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                    data.kpi.totalAnnualSelisih >= 0
-                      ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300'
-                      : 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300'
-                  }`}
-                >
-                  {data.kpi.totalAnnualSelisih >= 0 ? 'Tersimpan / Hemat' : 'Defisit'}
-                </span>
-                <span className="text-xs text-slate-400">total tahun ini</span>
+              <div className="mt-1 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
+                <span>Rata-rata: {formatRupiah(data.kpi.avgMonthlySavings || 0)}/bln</span>
+                {data.kpi.savingsRate !== undefined && (
+                  <span className="font-semibold text-emerald-700 dark:text-emerald-300">
+                    {data.kpi.savingsRate}% rasio
+                  </span>
+                )}
               </div>
             </div>
 
@@ -491,9 +488,11 @@ export default function AnalyticsPage() {
                 <thead>
                   <tr className="bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-200/80 dark:border-slate-700/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <th className="py-3 px-4">Periode Bulan</th>
+                    <th className="py-3 px-4 text-right">Pendapatan</th>
                     <th className="py-3 px-4 text-right">Target Anggaran</th>
                     <th className="py-3 px-4 text-right">Aktual Terpakai</th>
-                    <th className="py-3 px-4 text-right">Sisa / Selisih</th>
+                    <th className="py-3 px-4 text-right">Tabungan</th>
+                    <th className="py-3 px-4 text-right">Sisa Anggaran</th>
                     <th className="py-3 px-4 text-center">Status</th>
                     <th className="py-3 px-4 text-center">Aksi</th>
                   </tr>
@@ -507,11 +506,17 @@ export default function AnalyticsPage() {
                       <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
                         {t.name}
                       </td>
+                      <td className="py-3.5 px-4 text-right tabular-nums text-slate-600 dark:text-slate-300 text-xs">
+                        {t.income ? formatRupiah(t.income) : '-'}
+                      </td>
                       <td className="py-3.5 px-4 text-right tabular-nums font-medium text-slate-600 dark:text-slate-300">
                         {formatRupiah(t.budget)}
                       </td>
                       <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white">
                         {formatRupiah(t.aktual)}
+                      </td>
+                      <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-emerald-600 dark:text-emerald-400">
+                        {t.savings ? formatRupiah(t.savings) : '-'}
                       </td>
                       <td className="py-3.5 px-4 text-right tabular-nums text-xs">
                         <span

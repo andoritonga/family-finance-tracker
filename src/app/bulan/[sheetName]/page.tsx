@@ -8,6 +8,8 @@ import { ExpenseTable } from '@/components/ExpenseTable';
 import { PositionSummaryTable } from '@/components/PositionSummaryTable';
 import { AddItemModal } from '@/components/AddItemModal';
 import { ManagePositionsModal } from '@/components/ManagePositionsModal';
+import { SavingsCard } from '@/components/SavingsCard';
+import { EditIncomeModal } from '@/components/EditIncomeModal';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MonthlySheet, PositionSummary } from '@/lib/types';
 
@@ -21,6 +23,7 @@ export default function BulanPage() {
   const [posisiSummary, setPosisiSummary] = useState<PositionSummary[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showManagePosModal, setShowManagePosModal] = useState(false);
+  const [showEditIncomeModal, setShowEditIncomeModal] = useState(false);
 
   const fetchSheet = async (showRefreshIndicator = false) => {
     if (showRefreshIndicator) setIsRefreshing(true);
@@ -174,6 +177,13 @@ export default function BulanPage() {
         totalCount={totalCount}
       />
 
+      {/* Cashflow & Savings Card */}
+      <SavingsCard
+        savingsInfo={sheet.savingsInfo}
+        totalBudget={sheet.totalBudget}
+        onOpenEditModal={() => setShowEditIncomeModal(true)}
+      />
+
       {/* Main Expense Table Section */}
       <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 sm:p-7 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
@@ -218,6 +228,21 @@ export default function BulanPage() {
 
         <PositionSummaryTable summaries={posisiSummary} />
       </section>
+
+      {/* Edit Income & Savings Modal */}
+      {showEditIncomeModal && (
+        <EditIncomeModal
+          isOpen={showEditIncomeModal}
+          sheetName={sheet.name}
+          currentIncomeFormula={sheet.savingsInfo?.incomeFormula}
+          currentIncome={sheet.savingsInfo?.income}
+          currentAccount={sheet.savingsInfo?.targetAccount}
+          currentKeterangan={sheet.savingsInfo?.keterangan}
+          totalBudget={sheet.totalBudget}
+          onClose={() => setShowEditIncomeModal(false)}
+          onSuccess={() => fetchSheet(true)}
+        />
+      )}
 
       {/* Add Item Modal */}
       {showAddModal && (
