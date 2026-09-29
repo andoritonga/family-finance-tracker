@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { SummaryCards } from '@/components/SummaryCards';
 import { PositionSummaryTable } from '@/components/PositionSummaryTable';
 import { GenerateModal } from '@/components/GenerateModal';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { Navbar } from '@/components/Navbar';
 import { MonthlySheet } from '@/lib/types';
 
 interface SheetInfo {
@@ -72,38 +72,8 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-10">
-      {/* Top Navigation / Brand Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200/80 dark:border-slate-800">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center font-black text-xl shadow-sm shadow-indigo-200 dark:shadow-none">
-            📊
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                APBK Finansial
-              </h1>
-              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                ● Live Sync
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Pencatatan & Pengelolaan Anggaran Pengeluaran Keluarga
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <ThemeToggle />
-
-          <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
-          >
-            <span>✨</span> Generate Bulan Baru
-          </button>
-        </div>
-      </header>
+      {/* Top Navigation */}
+      <Navbar onOpenGenerateModal={() => setShowModal(true)} />
 
       {loading ? (
         <div className="space-y-6">
