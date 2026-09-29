@@ -7,6 +7,7 @@ import { SummaryCards } from '@/components/SummaryCards';
 import { ExpenseTable } from '@/components/ExpenseTable';
 import { PositionSummaryTable } from '@/components/PositionSummaryTable';
 import { AddItemModal } from '@/components/AddItemModal';
+import { ManagePositionsModal } from '@/components/ManagePositionsModal';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MonthlySheet, PositionSummary } from '@/lib/types';
 
@@ -19,6 +20,7 @@ export default function BulanPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [posisiSummary, setPosisiSummary] = useState<PositionSummary[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showManagePosModal, setShowManagePosModal] = useState(false);
 
   const fetchSheet = async (showRefreshIndicator = false) => {
     if (showRefreshIndicator) setIsRefreshing(true);
@@ -180,7 +182,7 @@ export default function BulanPage() {
               Daftar Pos Pengeluaran
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Ubah nilai kolom aktual langsung dengan klik angka pada tabel
+              Klik pada nama item, anggaran, atau tombol ✏️ untuk mengedit rincian
             </p>
           </div>
         </div>
@@ -195,13 +197,23 @@ export default function BulanPage() {
 
       {/* Breakdown per Posisi / Rekening Section (Clean & Orderly Table!) */}
       <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 sm:p-7 shadow-sm space-y-4">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-            Ringkasan Alokasi per Rekening
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Pembagian beban pengeluaran berdasarkan dompet / rekening bank
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+              Ringkasan Alokasi per Rekening
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Otomatis dikelompokkan berdasarkan kolom rekening layaknya Pivot Table
+            </p>
+          </div>
+
+          <button
+            onClick={() => setShowManagePosModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-fit"
+          >
+            <span>⚙️</span>
+            <span>Kelola / Ganti Nama Rekening</span>
+          </button>
         </div>
 
         <PositionSummaryTable summaries={posisiSummary} />
@@ -213,6 +225,17 @@ export default function BulanPage() {
           sheetName={sheet.name}
           existingPositions={existingPositions}
           onClose={() => setShowAddModal(false)}
+          onSuccess={() => fetchSheet(true)}
+        />
+      )}
+
+      {/* Manage Positions Modal */}
+      {showManagePosModal && (
+        <ManagePositionsModal
+          sheetName={sheet.name}
+          items={sheet.items}
+          summaries={posisiSummary}
+          onClose={() => setShowManagePosModal(false)}
           onSuccess={() => fetchSheet(true)}
         />
       )}

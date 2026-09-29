@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { ExpenseItem } from '@/lib/types';
 import { formatRupiah } from '@/lib/format';
+import { EditItemModal } from '@/components/EditItemModal';
 
 interface ExpenseTableProps {
   items: ExpenseItem[];
@@ -23,6 +24,12 @@ export function ExpenseTable({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPosisi, setSelectedPosisi] = useState('ALL');
   const [filterChecklist, setFilterChecklist] = useState<'ALL' | 'UNCHECKED' | 'CHECKED'>('ALL');
+
+  // Edit Modal State
+  const [activeEditItem, setActiveEditItem] = useState<{
+    item: ExpenseItem;
+    rowIndex: number;
+  } | null>(null);
 
   // Extract unique positions for filter pills
   const positions = useMemo(() => {
@@ -106,6 +113,11 @@ export function ExpenseTable({
     handleUpdate(item, undefined, !item.checklist);
   };
 
+  const openEditModal = (item: ExpenseItem) => {
+    const rowIndex = items.findIndex((i) => i.no === item.no);
+    setActiveEditItem({ item, rowIndex });
+  };
+
   const getPosisiColor = (pos: string) => {
     const p = (pos || '').toLowerCase();
     if (p.includes('cash') || p.includes('tunai')) {
@@ -158,7 +170,7 @@ export function ExpenseTable({
           <select
             value={selectedPosisi}
             onChange={(e) => setSelectedPosisi(e.target.value)}
-            className="text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+            className="text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer"
           >
             <option value="ALL">Semua Rekening ({items.length})</option>
             {positions.map((pos) => (
@@ -233,12 +245,13 @@ export function ExpenseTable({
                 <th className="py-3.5 px-4">Rekening / Posisi</th>
                 <th className="py-3.5 px-4">Catatan</th>
                 <th className="py-3.5 px-4 text-center w-16">Bayar</th>
+                <th className="py-3.5 px-4 text-center w-12">Edit</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-sm">
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan={9} className="py-12 text-center text-slate-400 dark:text-slate-500">
                     <p className="text-base font-medium text-slate-600 dark:text-slate-300">
                       Tidak ada pengeluaran yang cocok
                     </p>
@@ -269,21 +282,27 @@ export function ExpenseTable({
                         {item.no}
                       </td>
 
-                      {/* Item Name */}
+                      {/* Item Name (clickable to edit) */}
                       <td className="py-3.5 px-4">
                         <span
-                          className={`font-medium ${
+                          onClick={() => openEditModal(item)}
+                          className={`font-medium cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ${
                             isChecked
                               ? 'text-slate-400 dark:text-slate-500 line-through'
                               : 'text-slate-800 dark:text-slate-200'
                           }`}
+                          title="Klik untuk mengedit item ini"
                         >
                           {item.pengeluaran}
                         </span>
                       </td>
 
-                      {/* Budget */}
-                      <td className="py-3.5 px-4 text-right font-medium text-slate-600 dark:text-slate-300 tabular-nums">
+                      {/* Budget (clickable to edit) */}
+                      <td
+                        onClick={() => openEditModal(item)}
+                        className="py-3.5 px-4 text-right font-medium text-slate-600 dark:text-slate-300 tabular-nums cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        title="Klik untuk mengedit anggaran"
+                      >
                         {formatRupiah(item.budget)}
                       </td>
 
@@ -344,22 +363,28 @@ export function ExpenseTable({
                       {/* Posisi Badge */}
                       <td className="py-3.5 px-4">
                         {item.posisi ? (
-                          <span
-                            className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-lg border ${getPosisiColor(
+                          <button
+                            onClick={() => openEditModal(item)}
+                            className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-lg border hover:opacity-80 transition-opacity ${getPosisiColor(
                               item.posisi
                             )}`}
+                            title="Klik untuk ubah rekening"
                           >
                             {item.posisi}
-                          </span>
+                          </button>
                         ) : (
                           <span className="text-xs text-slate-300 dark:text-slate-600">-</span>
                         )}
                       </td>
 
                       {/* Keterangan */}
-                      <td className="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400 max-w-xs truncate">
+                      <td
+                        onClick={() => openEditModal(item)}
+                        className="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400 max-w-xs truncate cursor-pointer hover:text-slate-700 dark:hover:text-slate-200"
+                        title={item.keterangan || 'Klik untuk tambah catatan'}
+                      >
                         {item.keterangan || (
-                          <span className="text-slate-300 dark:text-slate-600">-</span>
+                          <span className="text-slate-300 dark:text-slate-600 italic">tambah catatan</span>
                         )}
                       </td>
 
@@ -374,6 +399,17 @@ export function ExpenseTable({
                             className="w-5 h-5 rounded-lg border-2 border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500/20 focus:ring-offset-0 transition-all cursor-pointer accent-indigo-600 disabled:opacity-50"
                           />
                         </label>
+                      </td>
+
+                      {/* Edit Button */}
+                      <td className="py-3.5 px-4 text-center">
+                        <button
+                          onClick={() => openEditModal(item)}
+                          className="w-8 h-8 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700 dark:hover:text-indigo-400 flex items-center justify-center transition-colors text-sm"
+                          title="Edit Pengeluaran"
+                        >
+                          ✏️
+                        </button>
                       </td>
                     </tr>
                   );
@@ -397,10 +433,22 @@ export function ExpenseTable({
             pengeluaran
           </span>
           <span className="text-slate-400 dark:text-slate-500 hidden sm:inline">
-            💡 Tips: Tekan pada kolom Aktual untuk mengedit nilai
+            💡 Tips: Klik teks pengeluaran atau tombol ✏️ untuk mengedit anggaran & rekening
           </span>
         </div>
       </div>
+
+      {/* Edit Item Modal */}
+      {activeEditItem && (
+        <EditItemModal
+          item={activeEditItem.item}
+          rowIndex={activeEditItem.rowIndex}
+          sheetName={sheetName}
+          existingPositions={positions}
+          onClose={() => setActiveEditItem(null)}
+          onSuccess={onUpdate}
+        />
+      )}
     </div>
   );
 }

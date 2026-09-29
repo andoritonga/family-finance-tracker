@@ -64,7 +64,7 @@ export async function PUT(
     const sheetName = decodeURIComponent(rawSheetName);
     const body = await request.json();
     
-    const { rowIndex, aktual, checklist } = body;
+    const { rowIndex, pengeluaran, budget, aktual, checklist, posisi, keterangan } = body;
     
     if (typeof rowIndex !== 'number') {
       return NextResponse.json({ error: 'rowIndex is required and must be a number' }, { status: 400 });
@@ -75,30 +75,127 @@ export async function PUT(
     // In Google Sheets, rows are 1-indexed. Items start at row 2, so sheetRow = rowIndex + 2.
     const sheetRow = rowIndex + 2;
     
-    const updateData = [
-      {
-        range: `'${sheetName}'!D${sheetRow}`,
-        values: [[aktual !== null && aktual !== undefined ? aktual : '']]
-      },
-      {
-        range: `'${sheetName}'!F${sheetRow}`,
-        values: [[checklist ? 'TRUE' : 'FALSE']]
-      }
-    ];
+    const updateData: { range: string; values: any[][] }[] = [];
 
-    await sheets.spreadsheets.values.batchUpdate({
-      spreadsheetId: SPREADSHEET_ID,
-      requestBody: {
-        valueInputOption: 'USER_ENTERED',
-        data: updateData
-      }
-    });
+    if (pengeluaran !== undefined) {
+      updateData.push({
+        range: `'${sheetName}'!B${sheetRow}`,
+        values: [[pengeluaran.trim()]],
+      });
+    }
+
+    if (budget !== undefined) {
+      const numBudget = typeof budget === 'number' ? budget : parseInt(String(budget || 0).replace(/[^0-9-]/g, ''), 10) || 0;
+      updateData.push({
+        range: `'${sheetName}'!C${sheetRow}`,
+        values: [[numBudget]],
+      });
+      updateData.push({
+        range: `'${sheetName}'!E${sheetRow}`,
+        values: [[`=C${sheetRow}-D${sheetRow}`]],
+      });
+    }
+
+    if (aktual !== undefined) {
+      updateData.push({
+        range: `'${sheetName}'!D${sheetRow}`,
+        values: [[aktual !== null && aktual !== undefined && aktual !== '' ? aktual : '']],
+      });
+      updateData.push({
+        range: `'${sheetName}'!E${sheetRow}`,
+        values: [[`=C${sheetRow}-D${sheetRow}`]],
+      });
+    }
+
+    if (checklist !== undefined) {
+      updateData.push({
+        range: `'${sheetName}'!F${sheetRow}`,
+        values: [[checklist ? 'TRUE' : 'FALSE']],
+      });
+    }
+
+    if (posisi !== undefined) {
+      updateData.push({
+        range: `'${sheetName}'!G${sheetRow}`,
+        values: [[posisi.trim()]],
+      });
+    }
+
+    if (keterangan !== undefined) {
+      updateData.push({
+        range: `'${sheetName}'!H${sheetRow}`,
+        values: [[keterangan.trim()]],
+      });
+    }
+
+    if (updateData.length > 0) {
+      await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId: SPREADSHEET_ID,
+        requestBody: {
+          valueInputOption: 'USER_ENTERED',
+          data: updateData,
+        },
+      });
+    }
 
     return NextResponse.json({ success: true, message: 'Updated successfully' });
   } catch (error: any) {
     console.error(`Error updating sheet:`, error);
     return NextResponse.json(
       { error: 'Failed to update sheet data', details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ sheetName: string }> }
+) {
+  try {
+    const { sheetName: rawSheetName } = await params;
+    const sheetName = decodeURIComponent(rawSheetName);
+    const body = await request.json();
+    const { rowIndex } = body;
+
+    if (typeof rowIndex !== 'number') {
+      return NextResponse.json({ error: 'rowIndex is required' }, { status: 400 });
+    }
+
+    const sheets = getSheets();
+    const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+    const targetSheet = meta.data.sheets?.find((s) => s.properties?.title === sheetName);
+    if (!targetSheet || targetSheet.properties?.sheetId === undefined) {
+      return NextResponse.json({ error: 'Sheet tidak ditemukan' }, { status: 404 });
+    }
+    const sheetId = targetSheet.properties.sheetId;
+
+    // rowIndex is 0-based index of item. Items start at row 2 (row index 1 in 0-based dimension)
+    const deleteRowIndex0Based = rowIndex + 1;
+
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SPREADSHEET_ID,
+      requestBody: {
+        requests: [
+          {
+            deleteDimension: {
+              range: {
+                sheetId,
+                dimension: 'ROWS',
+                startIndex: deleteRowIndex0Based,
+                endIndex: deleteRowIndex0Based + 1,
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    return NextResponse.json({ success: true, message: 'Item berhasil dihapus' });
+  } catch (error: any) {
+    console.error('Error deleting item:', error);
+    return NextResponse.json(
+      { error: 'Gagal menghapus item pengeluaran', details: error.message },
       { status: 500 }
     );
   }
