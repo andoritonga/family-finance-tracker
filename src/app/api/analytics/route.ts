@@ -109,8 +109,12 @@ export async function GET() {
         mAktual += item.aktual || 0;
         mSelisih += item.selisih || 0;
 
-        // Group expense items by normalized name
-        const normName = item.pengeluaran.trim();
+        // Group expense items by normalized name (Gabungkan Fani 1 & Fani 2 di pos pengeluaran)
+        let normName = item.pengeluaran.trim();
+        if (/^fani\s*[12]$/i.test(normName) || /^fani$/i.test(normName)) {
+          normName = 'Fani';
+        }
+
         if (normName) {
           if (!expenseCategoryMap.has(normName)) {
             expenseCategoryMap.set(normName, {
@@ -126,18 +130,12 @@ export async function GET() {
           cat.totalAktual += item.aktual || 0;
           cat.occurrences += 1;
           if (item.posisi) {
-            const normPos = item.posisi.toLowerCase().includes('fani')
-              ? 'Blu Fani (Tgl 1 & 15)'
-              : item.posisi.trim();
-            cat.positions.add(normPos);
+            cat.positions.add(item.posisi.trim());
           }
         }
 
-        // Group by Posisi (Gabungkan Fani 1 & Fani 2)
-        let posName = item.posisi ? item.posisi.trim() : 'Lainnya';
-        if (posName.toLowerCase().includes('fani')) {
-          posName = 'Blu Fani (Tgl 1 & 15)';
-        }
+        // Group by Posisi / Rekening (Tetap terpisah per rekening)
+        const posName = item.posisi ? item.posisi.trim() : 'Lainnya';
 
         if (!positionMap.has(posName)) {
           positionMap.set(posName, {
