@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { formatRupiah } from '@/lib/format';
 
