@@ -281,8 +281,169 @@ export function ExpenseTable({
         </div>
       </div>
 
-      {/* Table Container */}
-      <div className="overflow-hidden border border-slate-200/80 dark:border-slate-700/80 rounded-2xl bg-white dark:bg-slate-800 shadow-sm">
+      {/* Mobile Card List View (Zero horizontal scrolling on phone) */}
+      <div className="block md:hidden space-y-3">
+        {filteredItems.length === 0 ? (
+          <div className="py-10 px-4 text-center rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Tidak ada pengeluaran yang cocok
+            </p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+              Sesuaikan filter atau kata kunci pencarian
+            </p>
+          </div>
+        ) : (
+          filteredItems.map((item) => {
+            const isChecked = item.checklist;
+            const isBeingEdited = editingId === item.no;
+            const isBeingUpdated = updatingId === item.no;
+            const selisih = item.selisih || 0;
+            const isOverBudget = selisih < 0;
+
+            return (
+              <div
+                key={item.no}
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-all ${
+                  isChecked
+                    ? 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/70 dark:border-slate-800/80'
+                    : 'bg-white dark:bg-slate-800/90 border-slate-200/90 dark:border-slate-700/90 shadow-xs'
+                }`}
+              >
+                {/* Header Row: Checkbox + Title + Rekening Badge */}
+                <div className="flex items-start justify-between gap-2.5 mb-2.5">
+                  <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                    {/* Checkbox button (Big comfortable tap target) */}
+                    <button
+                      type="button"
+                      onClick={() => toggleChecklist(item)}
+                      disabled={isBeingUpdated}
+                      className={`w-7 h-7 flex-shrink-0 mt-0.5 rounded-lg flex items-center justify-center transition-all ${
+                        isChecked
+                          ? 'bg-emerald-500 text-white shadow-xs'
+                          : 'border-2 border-slate-300 dark:border-slate-600 hover:border-indigo-500 bg-white dark:bg-slate-800'
+                      }`}
+                      aria-label={isChecked ? 'Tandai belum bayar' : 'Tandai sudah bayar'}
+                    >
+                      {isBeingUpdated ? (
+                        <span className="w-3.5 h-3.5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                      ) : isChecked ? (
+                        <span className="text-xs font-black">✓</span>
+                      ) : null}
+                    </button>
+
+                    <div className="min-w-0 flex-1 cursor-pointer" onClick={() => openEditModal(item)}>
+                      <h4
+                        className={`text-sm font-semibold leading-snug break-words ${
+                          isChecked
+                            ? 'text-slate-400 dark:text-slate-500 line-through'
+                            : 'text-slate-900 dark:text-white'
+                        }`}
+                      >
+                        {item.pengeluaran}
+                      </h4>
+                      {item.keterangan && (
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                          📝 {item.keterangan}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {item.posisi && (
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${getPosisiColor(
+                          item.posisi
+                        )}`}
+                      >
+                        {item.posisi}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => openEditModal(item)}
+                      className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors"
+                      title="Edit Item"
+                    >
+                      ✏️
+                    </button>
+                  </div>
+                </div>
+
+                {/* 3-Column Financial Metrics Bar */}
+                <div className="grid grid-cols-3 gap-2 py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800/80 text-xs items-center">
+                  {/* Anggaran */}
+                  <div>
+                    <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 block">
+                      Anggaran
+                    </span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-200 tabular-nums">
+                      {formatRupiah(item.budget)}
+                    </span>
+                  </div>
+
+                  {/* Aktual (Inline or tap to edit) */}
+                  <div>
+                    <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 block">
+                      Aktual
+                    </span>
+                    {isBeingEdited ? (
+                      <input
+                        type="text"
+                        autoFocus
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onBlur={() => handleAktualBlur(item)}
+                        onKeyDown={(e) => handleAktualKeyDown(e, item)}
+                        disabled={isBeingUpdated}
+                        placeholder="0"
+                        className="w-full text-left font-bold text-indigo-700 dark:text-indigo-400 bg-white dark:bg-slate-900 border-2 border-indigo-500 rounded px-1.5 py-0.5 text-xs outline-none"
+                      />
+                    ) : (
+                      <div
+                        onClick={() => handleAktualClick(item)}
+                        className="cursor-pointer inline-flex items-center gap-1 font-bold text-slate-900 dark:text-white tabular-nums hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                      >
+                        <span>
+                          {item.aktual !== null && item.aktual !== undefined
+                            ? formatRupiah(item.aktual)
+                            : 'Isi aktual'}
+                        </span>
+                        <span className="text-[10px] text-slate-300 dark:text-slate-600">✎</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Selisih */}
+                  <div className="text-right">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 block">
+                      Selisih
+                    </span>
+                    <span
+                      className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold tabular-nums ${
+                        isOverBudget
+                          ? 'bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300'
+                          : selisih === 0
+                          ? 'text-slate-500 dark:text-slate-400'
+                          : 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300'
+                      }`}
+                    >
+                      {formatRupiah(selisih)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+
+        {/* Mobile footer summary count */}
+        <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-1">
+          Menampilkan {filteredItems.length} dari {items.length} pengeluaran
+        </div>
+      </div>
+
+      {/* Desktop Table View (Hidden on mobile, spacious on wide screens) */}
+      <div className="hidden md:block overflow-hidden border border-slate-200/80 dark:border-slate-700/80 rounded-2xl bg-white dark:bg-slate-800 shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -391,8 +552,8 @@ export function ExpenseTable({
                             <span
                               className={`font-semibold tabular-nums ${
                                 item.aktual !== null && item.aktual !== undefined
-                                  ? 'text-slate-900 dark:text-white'
-                                  : 'text-slate-300 dark:text-slate-600 italic text-xs'
+                                    ? 'text-slate-900 dark:text-white'
+                                    : 'text-slate-300 dark:text-slate-600 italic text-xs'
                               }`}
                             >
                               {item.aktual !== null && item.aktual !== undefined

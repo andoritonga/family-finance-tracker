@@ -185,7 +185,7 @@ export default function BulanPage() {
       />
 
       {/* Main Expense Table Section */}
-      <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 sm:p-7 shadow-sm space-y-4">
+      <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-7 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
           <div>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -205,8 +205,8 @@ export default function BulanPage() {
         />
       </section>
 
-      {/* Breakdown per Posisi / Rekening Section (Clean & Orderly Table!) */}
-      <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 sm:p-7 shadow-sm space-y-4">
+      {/* Breakdown per Posisi / Rekening Section */}
+      <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-7 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">

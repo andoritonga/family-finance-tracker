@@ -91,7 +91,7 @@ export default function Dashboard() {
         <>
           {/* Active Month Showcase */}
           {currentSheet && (
-            <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-sm">
+            <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm">
               {/* Month Header & Quick Switcher */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>

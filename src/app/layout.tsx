@@ -41,7 +41,7 @@ export default function RootLayout({
       <body className="font-sans antialiased bg-[#F8FAFC] dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors duration-200">
         <ServiceWorkerRegister />
         <div className="min-h-screen">
-          <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+          <main className="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8">
             {children}
           </main>
         </div>
