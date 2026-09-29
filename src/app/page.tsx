@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SummaryCards } from '@/components/SummaryCards';
+import { PositionSummaryTable } from '@/components/PositionSummaryTable';
 import { GenerateModal } from '@/components/GenerateModal';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { MonthlySheet } from '@/lib/types';
-import { formatRupiah } from '@/lib/format';
 
 interface SheetInfo {
   name: string;
@@ -72,60 +73,66 @@ export default function Dashboard() {
   return (
     <div className="space-y-10">
       {/* Top Navigation / Brand Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200/80">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200/80 dark:border-slate-800">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center font-black text-xl shadow-sm shadow-indigo-200">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center font-black text-xl shadow-sm shadow-indigo-200 dark:shadow-none">
             📊
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                 APBK Finansial
               </h1>
-              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                 ● Live Sync
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Pencatatan & Pengelolaan Anggaran Pengeluaran Keluarga
             </p>
           </div>
         </div>
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-sm shadow-indigo-200"
-        >
-          <span>✨</span> Generate Bulan Baru
-        </button>
+        <div className="flex items-center gap-2.5">
+          <ThemeToggle />
+
+          <button
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
+          >
+            <span>✨</span> Generate Bulan Baru
+          </button>
+        </div>
       </header>
 
       {loading ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="h-36 bg-slate-200/70 rounded-2xl animate-pulse" />
-            <div className="h-36 bg-slate-200/70 rounded-2xl animate-pulse" />
-            <div className="h-36 bg-slate-200/70 rounded-2xl animate-pulse" />
+            <div className="h-36 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
+            <div className="h-36 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
+            <div className="h-36 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
           </div>
-          <div className="h-64 bg-slate-200/70 rounded-2xl animate-pulse" />
+          <div className="h-64 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
         </div>
       ) : (
         <>
           {/* Active Month Showcase */}
           {currentSheet && (
-            <section className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm">
+            <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-sm">
               {/* Month Header & Quick Switcher */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-lg">
                       Ringkasan Bulanan
                     </span>
                     {loadingDetail && (
-                      <span className="text-xs text-slate-400 animate-pulse">Memuat...</span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500 animate-pulse">
+                        Memuat...
+                      </span>
                     )}
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-900 tracking-tight mt-1">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mt-1">
                     {currentSheet.name}
                   </h2>
                 </div>
@@ -134,7 +141,7 @@ export default function Dashboard() {
                   <select
                     value={selectedMonthName}
                     onChange={(e) => handleMonthChange(e.target.value)}
-                    className="text-sm font-medium bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3.5 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                    className="text-sm font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3.5 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
                   >
                     {sheets.map((s) => (
                       <option key={s.name} value={s.name}>
@@ -145,7 +152,7 @@ export default function Dashboard() {
 
                   <Link
                     href={`/bulan/${encodeURIComponent(currentSheet.name)}`}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors"
                   >
                     Buka Detail <span>→</span>
                   </Link>
@@ -161,30 +168,20 @@ export default function Dashboard() {
                 totalCount={totalItemsCount}
               />
 
-              {/* Breakdown per Posisi / Rekening Preview */}
+              {/* Orderly Breakdown per Posisi / Rekening */}
               {currentSheet.positionSummaries && currentSheet.positionSummaries.length > 0 && (
-                <div className="mt-8 pt-6 border-t border-slate-100">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
-                    Alokasi per Rekening
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                    {currentSheet.positionSummaries.map((pos) => (
-                      <div
-                        key={pos.posisi}
-                        className="bg-slate-50/70 border border-slate-200/60 rounded-xl p-3 text-center"
-                      >
-                        <p className="text-xs font-semibold text-slate-600 truncate mb-1">
-                          {pos.posisi}
-                        </p>
-                        <p className="text-sm font-bold text-slate-900 tabular-nums">
-                          {formatRupiah(pos.aktual || pos.budget)}
-                        </p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">
-                          {pos.aktual ? 'Aktual' : 'Budget'}
-                        </p>
-                      </div>
-                    ))}
+                <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700/60 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                        Alokasi Rekening
+                      </h3>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
+                        Distribusi anggaran dan realisasi per pos rekening
+                      </p>
+                    </div>
                   </div>
+                  <PositionSummaryTable summaries={currentSheet.positionSummaries} />
                 </div>
               )}
             </section>
@@ -192,15 +189,13 @@ export default function Dashboard() {
 
           {/* All Months Grid */}
           <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-                  Arsip Lembar Anggaran
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Total {sheets.length} periode tercatat di Google Sheets
-                </p>
-              </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                Arsip Lembar Anggaran
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Total {sheets.length} periode tercatat di Google Sheets
+              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -209,33 +204,33 @@ export default function Dashboard() {
                 return (
                   <div
                     key={sheet.name}
-                    className={`relative group bg-white rounded-2xl p-5 border transition-all duration-200 ${
+                    className={`relative group bg-white dark:bg-slate-800 rounded-2xl p-5 border transition-all duration-200 ${
                       isSelected
-                        ? 'border-indigo-500 ring-2 ring-indigo-500/10 shadow-sm'
-                        : 'border-slate-200/80 hover:border-slate-300 hover:shadow-md'
+                        ? 'border-indigo-500 dark:border-indigo-500 ring-2 ring-indigo-500/10 shadow-sm'
+                        : 'border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-4">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-sm group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-sm group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/60 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         🗓️
                       </div>
-                      <span className="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                      <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded-full border border-slate-100 dark:border-slate-800">
                         {sheet.year}
                       </span>
                     </div>
 
-                    <h3 className="font-bold text-lg text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors">
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-white tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                       {sheet.name}
                     </h3>
-                    <p className="text-xs text-slate-400 mt-1">Periode ke-{sheet.month}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Periode ke-{sheet.month}</p>
 
-                    <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
                       <button
                         onClick={() => handleMonthChange(sheet.name)}
                         className={`text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors ${
                           isSelected
-                            ? 'bg-indigo-50 text-indigo-700'
-                            : 'text-slate-500 hover:bg-slate-100'
+                            ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300'
+                            : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
                         }`}
                       >
                         {isSelected ? '✓ Terpilih' : 'Lihat Ringkasan'}
@@ -243,7 +238,7 @@ export default function Dashboard() {
 
                       <Link
                         href={`/bulan/${encodeURIComponent(sheet.name)}`}
-                        className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
+                        className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
                       >
                         Buka Lembar <span>→</span>
                       </Link>
