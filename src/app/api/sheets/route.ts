@@ -1,9 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSheets, SPREADSHEET_ID } from '@/lib/google-sheets';
 import { parseSheetName } from '@/lib/sheet-helpers';
+import { cache } from '@/lib/cache';
 
-export async function GET() {
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const forceRefresh = searchParams.get('refresh') === 'true';
+
+    if (!forceRefresh) {
+      const cached = cache.get<{ name: string; month: number; year: number }[]>('sheetList');
+      if (cached) {
+        return NextResponse.json(cached);
+      }
+    }
+
     const sheets = getSheets();
     const response = await sheets.spreadsheets.get({
       spreadsheetId: SPREADSHEET_ID,

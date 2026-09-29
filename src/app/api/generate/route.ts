@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
         item.budget,
         '', // Aktual empty
         `=C${rowIndex}-D${rowIndex}`, // Selisih formula
-        'FALSE', // Checklist false
+        `=IF(E${rowIndex}=0, TRUE, FALSE)`, // Checklist formula automatic when selisih is 0
         item.posisi,
         item.keterangan
       ]);

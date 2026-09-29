@@ -1,12 +1,24 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSheets, SPREADSHEET_ID } from '@/lib/google-sheets';
 import { parseSheetData, parseSheetName } from '@/lib/sheet-helpers';
+import { cache } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const forceRefresh = searchParams.get('refresh') === 'true';
+    const cacheKey = 'analytics';
+
+    if (!forceRefresh) {
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        return NextResponse.json(cached);
+      }
+    }
+
     const sheets = getSheets();
 
     // 1. Get all sheet metadata
@@ -233,7 +245,7 @@ export async function GET() {
     const avgMonthlySavings = totalMonths > 0 ? totalAnnualSavings / totalMonths : 0;
     const savingsRate = totalAnnualIncome > 0 ? (totalAnnualSavings / totalAnnualIncome) * 100 : 0;
 
-    return NextResponse.json({
+    const result = {
       kpi: {
         totalMonths,
         totalAnnualIncome,
@@ -259,7 +271,11 @@ export async function GET() {
       monthlyTrends,
       topExpenses,
       positionDistribution,
-    });
+    };
+
+    cache.set(cacheKey, result, 120);
+
+    return NextResponse.json(result);
   } catch (error: any) {
     console.error('Error in analytics API:', error);
     return NextResponse.json(

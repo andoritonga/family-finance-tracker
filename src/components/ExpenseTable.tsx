@@ -25,6 +25,13 @@ export function ExpenseTable({
   const [selectedPosisi, setSelectedPosisi] = useState('ALL');
   const [filterChecklist, setFilterChecklist] = useState<'ALL' | 'UNCHECKED' | 'CHECKED'>('ALL');
 
+  const [localItems, setLocalItems] = useState<ExpenseItem[]>(items);
+
+  // Synchronize local items when parent items change
+  React.useEffect(() => {
+    setLocalItems(items);
+  }, [items]);
+
   // Edit Modal State
   const [activeEditItem, setActiveEditItem] = useState<{
     item: ExpenseItem;
@@ -33,17 +40,17 @@ export function ExpenseTable({
 
   // Extract unique positions for filter pills
   const positions = useMemo(() => {
-    const list = Array.from(new Set(items.map((i) => i.posisi).filter(Boolean)));
+    const list = Array.from(new Set(localItems.map((i) => i.posisi).filter(Boolean)));
     return list.sort();
-  }, [items]);
+  }, [localItems]);
 
   const totalMonthBudget = useMemo(() => {
-    return items.reduce((sum, i) => sum + (i.budget || 0), 0);
-  }, [items]);
+    return localItems.reduce((sum, i) => sum + (i.budget || 0), 0);
+  }, [localItems]);
 
   // Filtered items
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
+    return localItems.filter((item) => {
       const matchSearch =
         item.pengeluaran.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.keterangan.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -60,33 +67,76 @@ export function ExpenseTable({
 
       return matchSearch && matchPosisi && matchChecklist;
     });
-  }, [items, searchQuery, selectedPosisi, filterChecklist]);
+  }, [localItems, searchQuery, selectedPosisi, filterChecklist]);
 
   const handleUpdate = async (
     item: ExpenseItem,
     newAktual?: number | null,
     newChecklist?: boolean
   ) => {
+    // 1. Optimistic Update immediately in local state (0ms latency for user)
+    const targetAktual = newAktual !== undefined ? newAktual : item.aktual;
+    const targetSelisih = targetAktual !== null ? item.budget - targetAktual : item.budget;
+
+    // Auto-checklist rule:
+    // When selisih reaches 0 (or targetAktual >= budget), mark checklist as true automatically
+    let targetChecklist: boolean;
+    if (newChecklist !== undefined) {
+      targetChecklist = newChecklist;
+    } else if (newAktual !== undefined) {
+      if (targetAktual !== null && targetSelisih <= 0) {
+        targetChecklist = true;
+      } else {
+        targetChecklist = item.checklist;
+      }
+    } else {
+      targetChecklist = item.checklist;
+    }
+
+    setLocalItems((prev) =>
+      prev.map((i) =>
+        i.no === item.no
+          ? {
+              ...i,
+              aktual: targetAktual,
+              selisih: targetSelisih,
+              checklist: targetChecklist,
+            }
+          : i
+      )
+    );
+
     setUpdatingId(item.no);
+    setEditingId(null);
+
     try {
       const rowIndex = items.findIndex((i) => i.no === item.no);
+      const payload: Record<string, any> = { rowIndex };
+      if (newAktual !== undefined) {
+        payload.aktual = newAktual;
+      }
+      if (newChecklist !== undefined) {
+        payload.checklist = newChecklist;
+      }
+
       const res = await fetch(`/api/sheets/${encodeURIComponent(sheetName)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rowIndex,
-          aktual: newAktual !== undefined ? newAktual : item.aktual,
-          checklist: newChecklist !== undefined ? newChecklist : item.checklist,
-        }),
+        body: JSON.stringify(payload),
       });
+
       if (res.ok) {
         onUpdate();
+      } else {
+        // Rollback on server error
+        setLocalItems(items);
       }
     } catch (e) {
       console.error('Update failed', e);
+      // Rollback on network failure
+      setLocalItems(items);
     } finally {
       setUpdatingId(null);
-      setEditingId(null);
     }
   };
 

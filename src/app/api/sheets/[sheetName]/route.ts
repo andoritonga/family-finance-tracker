@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSheets, SPREADSHEET_ID } from '@/lib/google-sheets';
 import { parseSheetData, parseSheetName } from '@/lib/sheet-helpers';
+import { cache } from '@/lib/cache';
 
 export async function GET(
   request: NextRequest,
@@ -13,6 +14,17 @@ export async function GET(
     
     if (!parsedName) {
       return NextResponse.json({ error: 'Invalid sheet name format' }, { status: 400 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const forceRefresh = searchParams.get('refresh') === 'true';
+    const cacheKey = `sheet:${sheetName}`;
+
+    if (!forceRefresh) {
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        return NextResponse.json(cached);
+      }
     }
 
     const sheets = getSheets();
@@ -54,6 +66,8 @@ export async function GET(
       totalAktual,
       totalSelisih
     };
+
+    cache.set(cacheKey, monthlySheet, 60);
 
     return NextResponse.json(monthlySheet);
   } catch (error: any) {
@@ -152,7 +166,8 @@ export async function PUT(
           },
         });
       }
-
+      cache.delete(`sheet:${sheetName}`);
+      cache.delete('analytics');
       return NextResponse.json({ success: true, message: 'Income and savings updated successfully' });
     }
 
@@ -199,6 +214,14 @@ export async function PUT(
       });
     }
 
+    // Otomatis pasang formula checklist jika budget / aktual diubah dan checklist tidak di-toggle manual
+    if (checklist === undefined && (budget !== undefined || aktual !== undefined)) {
+      updateData.push({
+        range: `'${sheetName}'!F${sheetRow}`,
+        values: [[`=IF(E${sheetRow}=0, TRUE, FALSE)`]],
+      });
+    }
+
     if (checklist !== undefined) {
       updateData.push({
         range: `'${sheetName}'!F${sheetRow}`,
@@ -228,6 +251,8 @@ export async function PUT(
           data: updateData,
         },
       });
+      cache.delete(`sheet:${sheetName}`);
+      cache.delete('analytics');
     }
 
     return NextResponse.json({ success: true, message: 'Updated successfully' });
@@ -282,6 +307,9 @@ export async function DELETE(
         ],
       },
     });
+
+    cache.delete(`sheet:${sheetName}`);
+    cache.delete('analytics');
 
     return NextResponse.json({ success: true, message: 'Item berhasil dihapus' });
   } catch (error: any) {
@@ -381,13 +409,16 @@ export async function POST(
             numBudget,
             '', // Aktual empty
             `=C${newRow1Based}-D${newRow1Based}`, // Selisih formula
-            'FALSE', // Checklist false
+            `=IF(E${newRow1Based}=0, TRUE, FALSE)`, // Checklist formula automatic
             posisi ? posisi.trim() : '',
             keterangan ? keterangan.trim() : '',
           ],
         ],
       },
     });
+
+    cache.delete(`sheet:${sheetName}`);
+    cache.delete('analytics');
 
     return NextResponse.json({
       success: true,

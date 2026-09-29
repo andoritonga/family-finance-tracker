@@ -102,13 +102,21 @@ export function parseSheetData(
           totalRowIndex = i;
         }
       } else {
+        const budget = parseRupiah(row[2] || '');
+        const aktual = row[3] !== undefined && row[3] !== null && row[3].trim() !== '' ? parseRupiah(row[3]) : null;
+        const selisih = parseRupiah(row[4] || '');
+        const rawChecklist = (row[5] || '').toUpperCase() === 'TRUE';
+        // Otomatis terchecklist jika selisih <= 0 (dan aktual sudah diisi) atau jika cell bernilai TRUE
+        const isZeroDiff = aktual !== null && (budget - aktual) <= 0;
+        const checklist = rawChecklist || isZeroDiff;
+
         items.push({
           no: parseInt(col0, 10),
           pengeluaran: col1,
-          budget: parseRupiah(row[2] || ''),
-          aktual: row[3] !== undefined && row[3] !== null && row[3].trim() !== '' ? parseRupiah(row[3]) : null,
-          selisih: parseRupiah(row[4] || ''),
-          checklist: (row[5] || '').toUpperCase() === 'TRUE',
+          budget,
+          aktual,
+          selisih,
+          checklist,
           posisi: (row[6] || '').trim(),
           keterangan: (row[7] || '').trim()
         });
