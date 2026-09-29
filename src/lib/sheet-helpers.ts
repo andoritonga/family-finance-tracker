@@ -52,47 +52,50 @@ export function parseSheetData(rows: string[][]): { items: ExpenseItem[], positi
   let isParsingItems = true;
   let isParsingPositions = false;
   
-  // Rows 2-N: skip header (index 0)
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
+    if (!row || row.length === 0) continue;
     
-    // Check if we reached the total summary row
+    const col0 = (row[0] || '').trim();
+    const col1 = (row[1] || '').trim();
+    
     if (isParsingItems) {
-      if (!row[0] || row[0].trim() === '') {
+      const isItemNo = /^\d+$/.test(col0);
+      const isTotalWord = /^(jumlah|total|grand total|subtotal|nabung)$/i.test(col0) || /^(total|jumlah|grand total)$/i.test(col1);
+      
+      if (!isItemNo || isTotalWord || !col0) {
         isParsingItems = false;
+      } else {
+        items.push({
+          no: parseInt(col0, 10),
+          pengeluaran: col1,
+          budget: parseRupiah(row[2] || ''),
+          aktual: row[3] !== undefined && row[3] !== null && row[3].trim() !== '' ? parseRupiah(row[3]) : null,
+          selisih: parseRupiah(row[4] || ''),
+          checklist: (row[5] || '').toUpperCase() === 'TRUE',
+          posisi: (row[6] || '').trim(),
+          keterangan: (row[7] || '').trim()
+        });
         continue;
       }
-      
-      items.push({
-        no: parseInt(row[0], 10),
-        pengeluaran: row[1] || '',
-        budget: parseRupiah(row[2]),
-        aktual: row[3] ? parseRupiah(row[3]) : null,
-        selisih: parseRupiah(row[4]),
-        checklist: row[5] === 'TRUE',
-        posisi: row[6] || '',
-        keterangan: row[7] || ''
-      });
-    } else if (!isParsingItems) {
-      // Find where 'Posisi' summary starts
-      if (!isParsingPositions) {
-        if (row[1] === 'Posisi') {
-          isParsingPositions = true;
-        }
-      } else {
-        // Parse position summary, stops if empty
-        if (!row[1] || row[1].trim() === '') {
-          // might be the transfer section
-          continue;
-        }
-        if (row[1] && row[2] !== undefined) {
-          positionSummaries.push({
-            posisi: row[1],
-            budget: parseRupiah(row[2]),
-            aktual: parseRupiah(row[3]),
-            selisih: parseRupiah(row[4])
-          });
-        }
+    }
+    
+    // Position Section
+    if (!isParsingPositions) {
+      if (col1 === 'Posisi') {
+        isParsingPositions = true;
+      }
+    } else {
+      if (!col1 || col1.toLowerCase().includes('grand total') || col1.toLowerCase().includes('transfer') || col1.toLowerCase().includes('total')) {
+        continue;
+      }
+      if (col1 && row[2] !== undefined) {
+        positionSummaries.push({
+          posisi: col1,
+          budget: parseRupiah(row[2] || ''),
+          aktual: parseRupiah(row[3] || ''),
+          selisih: parseRupiah(row[4] || '')
+        });
       }
     }
   }

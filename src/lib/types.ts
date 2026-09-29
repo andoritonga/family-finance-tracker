@@ -17,6 +17,7 @@ export interface MonthlySheet {
   totalBudget: number;
   totalAktual: number;
   totalSelisih: number;
+  positionSummaries?: PositionSummary[];
 }
 
 export interface PositionSummary {
