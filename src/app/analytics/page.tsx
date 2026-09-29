@@ -22,6 +22,7 @@ interface TopExpense {
   totalBudget: number;
   totalAktual: number;
   avgMonthly: number;
+  percentOfTotal?: number;
   occurrences: number;
   positions: string[];
 }
@@ -32,6 +33,7 @@ interface PositionDist {
   totalAktual: number;
   totalSelisih: number;
   percentage: number;
+  budgetPercentage?: number;
 }
 
 interface AnalyticsData {
@@ -384,10 +386,18 @@ export default function AnalyticsPage() {
                             {exp.name}
                           </span>
                         </div>
-                        <div className="text-right shrink-0">
+                        <div className="text-right shrink-0 flex items-center gap-2">
                           <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white tabular-nums">
                             {formatRupiah(exp.totalAktual || exp.totalBudget)}
                           </span>
+                          {exp.percentOfTotal !== undefined && (
+                            <span
+                              className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 tabular-nums"
+                              title={`${exp.percentOfTotal}% dari total alokasi pengeluaran`}
+                            >
+                              {exp.percentOfTotal}%
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -401,6 +411,7 @@ export default function AnalyticsPage() {
                         </div>
                         <span className="text-[10px] text-slate-400 tabular-nums shrink-0">
                           Rata-rata: {formatRupiah(exp.avgMonthly)}/bln
+                          {exp.percentOfTotal !== undefined ? ` • ${exp.percentOfTotal}% alokasi` : ''}
                         </span>
                       </div>
                     </div>
@@ -422,20 +433,29 @@ export default function AnalyticsPage() {
 
               <div className="space-y-3.5">
                 {data.positionDistribution.map((pos) => {
+                  const isFani = pos.posisi.toLowerCase().includes('fani');
+
                   return (
                     <div
                       key={pos.posisi}
                       className="p-3.5 bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors"
                     >
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-200">
-                          {pos.posisi}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-200">
+                            {pos.posisi}
+                          </span>
+                          {isFani && (
+                            <span className="hidden sm:inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border border-violet-200/60 dark:border-violet-800">
+                              Gabungan Gajian 1 & 15
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white tabular-nums">
                             {formatRupiah(pos.totalAktual || pos.totalBudget)}
                           </span>
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 tabular-nums">
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 tabular-nums" title={`${pos.percentage.toFixed(1)}% dari total pengeluaran`}>
                             {pos.percentage.toFixed(1)}%
                           </span>
                         </div>

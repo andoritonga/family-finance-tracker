@@ -37,6 +37,10 @@ export function ExpenseTable({
     return list.sort();
   }, [items]);
 
+  const totalMonthBudget = useMemo(() => {
+    return items.reduce((sum, i) => sum + (i.budget || 0), 0);
+  }, [items]);
+
   // Filtered items
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -300,10 +304,17 @@ export function ExpenseTable({
                       {/* Budget (clickable to edit) */}
                       <td
                         onClick={() => openEditModal(item)}
-                        className="py-3.5 px-4 text-right font-medium text-slate-600 dark:text-slate-300 tabular-nums cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="py-3.5 px-4 text-right tabular-nums cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                         title="Klik untuk mengedit anggaran"
                       >
-                        {formatRupiah(item.budget)}
+                        <div className="font-medium text-slate-700 dark:text-slate-200">
+                          {formatRupiah(item.budget)}
+                        </div>
+                        {totalMonthBudget > 0 && item.budget > 0 && (
+                          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
+                            {((item.budget / totalMonthBudget) * 100).toFixed(1)}% total
+                          </div>
+                        )}
                       </td>
 
                       {/* Aktual (Inline Edit) */}

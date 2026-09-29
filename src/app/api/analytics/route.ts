@@ -121,11 +121,20 @@ export async function GET() {
           cat.totalBudget += item.budget;
           cat.totalAktual += item.aktual || 0;
           cat.occurrences += 1;
-          if (item.posisi) cat.positions.add(item.posisi);
+          if (item.posisi) {
+            const normPos = item.posisi.toLowerCase().includes('fani')
+              ? 'Blu Fani (Tgl 1 & 15)'
+              : item.posisi.trim();
+            cat.positions.add(normPos);
+          }
         }
 
-        // Group by Posisi
-        const posName = item.posisi ? item.posisi.trim() : 'Lainnya';
+        // Group by Posisi (Gabungkan Fani 1 & Fani 2)
+        let posName = item.posisi ? item.posisi.trim() : 'Lainnya';
+        if (posName.toLowerCase().includes('fani')) {
+          posName = 'Blu Fani (Tgl 1 & 15)';
+        }
+
         if (!positionMap.has(posName)) {
           positionMap.set(posName, {
             posisi: posName,
@@ -181,15 +190,21 @@ export async function GET() {
     });
 
     // Top 10 expenses sorted by total aktual (or total budget)
+    const totalBenchmark = totalAnnualAktual > 0 ? totalAnnualAktual : totalAnnualBudget;
     const topExpenses = Array.from(expenseCategoryMap.values())
-      .map((cat) => ({
-        name: cat.name,
-        totalBudget: cat.totalBudget,
-        totalAktual: cat.totalAktual,
-        avgMonthly: cat.totalAktual > 0 ? cat.totalAktual / totalMonths : cat.totalBudget / totalMonths,
-        occurrences: cat.occurrences,
-        positions: Array.from(cat.positions),
-      }))
+      .map((cat) => {
+        const val = cat.totalAktual > 0 ? cat.totalAktual : cat.totalBudget;
+        const percentOfTotal = totalBenchmark > 0 ? (val / totalBenchmark) * 100 : 0;
+        return {
+          name: cat.name,
+          totalBudget: cat.totalBudget,
+          totalAktual: cat.totalAktual,
+          avgMonthly: cat.totalAktual > 0 ? cat.totalAktual / totalMonths : cat.totalBudget / totalMonths,
+          percentOfTotal: Number(percentOfTotal.toFixed(1)),
+          occurrences: cat.occurrences,
+          positions: Array.from(cat.positions),
+        };
+      })
       .sort((a, b) => (b.totalAktual || b.totalBudget) - (a.totalAktual || a.totalBudget))
       .slice(0, 10);
 
@@ -200,9 +215,10 @@ export async function GET() {
         totalBudget: p.totalBudget,
         totalAktual: p.totalAktual,
         totalSelisih: p.totalSelisih,
+        budgetPercentage: totalAnnualBudget > 0 ? (p.totalBudget / totalAnnualBudget) * 100 : 0,
         percentage: totalAnnualAktual > 0 ? (p.totalAktual / totalAnnualAktual) * 100 : 0,
       }))
-      .sort((a, b) => b.totalAktual - a.totalAktual);
+      .sort((a, b) => (b.totalAktual || b.totalBudget) - (a.totalAktual || a.totalBudget));
 
     return NextResponse.json({
       kpi: {

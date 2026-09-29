@@ -32,16 +32,18 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
         <table className="w-full text-left border-collapse text-sm">
           <thead>
             <tr className="bg-slate-50/80 dark:bg-slate-900/40 border-b border-slate-200/80 dark:border-slate-700/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              <th className="py-3.5 px-4">Rekening / Dompet</th>
+              <th className="py-3.5 px-4">Rekening / Pos Alokasi</th>
               <th className="py-3.5 px-4 text-right">Target Anggaran</th>
+              <th className="py-3.5 px-4 text-center">% Porsi Alokasi</th>
               <th className="py-3.5 px-4 text-right">Aktual Terpakai</th>
               <th className="py-3.5 px-4 text-right">Sisa / Selisih</th>
-              <th className="py-3.5 px-4 text-center w-48">Realisasi</th>
+              <th className="py-3.5 px-4 text-center w-44">Realisasi Pos</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
             {summaries.map((pos) => {
               const percent = pos.budget > 0 ? (pos.aktual / pos.budget) * 100 : 0;
+              const allocationPercent = totalBudget > 0 ? (pos.budget / totalBudget) * 100 : 0;
               const cappedPercent = Math.min(100, Math.max(0, percent));
               const isSurplus = pos.selisih >= 0;
 
@@ -59,6 +61,12 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
 
                   <td className="py-3.5 px-4 text-right font-medium text-slate-600 dark:text-slate-300 tabular-nums">
                     {formatRupiah(pos.budget)}
+                  </td>
+
+                  <td className="py-3.5 px-4 text-center">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 tabular-nums" title={`${allocationPercent.toFixed(1)}% dari total anggaran bulanan`}>
+                      {allocationPercent.toFixed(1)}%
+                    </span>
                   </td>
 
                   <td className="py-3.5 px-4 text-right font-semibold text-slate-900 dark:text-white tabular-nums">
@@ -107,6 +115,9 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
               <td className="py-3.5 px-4 uppercase tracking-wider">Total Keseluruhan</td>
               <td className="py-3.5 px-4 text-right tabular-nums text-sm">
                 {formatRupiah(totalBudget)}
+              </td>
+              <td className="py-3.5 px-4 text-center tabular-nums text-xs text-indigo-600 dark:text-indigo-400 font-bold">
+                100%
               </td>
               <td className="py-3.5 px-4 text-right tabular-nums text-sm text-indigo-600 dark:text-indigo-400">
                 {formatRupiah(totalAktual)}
