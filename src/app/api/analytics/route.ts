@@ -121,10 +121,12 @@ export async function GET(request: NextRequest) {
         mAktual += item.aktual || 0;
         mSelisih += item.selisih || 0;
 
-        // Group expense items by normalized name (Gabungkan Fani 1 & Fani 2 di pos pengeluaran)
+        // Group expense items by normalized name (Gabungkan Fani 1 & 2 serta Rumah M.Ritonga 1 & 2 di pos pengeluaran)
         let normName = item.pengeluaran.trim();
         if (/^fani\s*[12]$/i.test(normName) || /^fani$/i.test(normName)) {
           normName = 'Fani';
+        } else if (/^rumah\s*m\.?\s*ritonga.*matondang\s*[12]?$/i.test(normName)) {
+          normName = 'Rumah M.Ritonga/br. Matondang';
         }
 
         if (normName) {
