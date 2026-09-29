@@ -1,0 +1,14 @@
+services:
+  apbk-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: apbk-finance-tracker
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    env_file:
+      - .env.local
+    volumes:
+      # Mount Google Service Account key file into container
+      - ./service-account-key.json:/app/service-account-key.json:ro
