@@ -15,7 +15,7 @@ import { MonthlySheet, PositionSummary } from '@/lib/types';
 
 export default function BulanPage() {
   const params = useParams();
-  const sheetName = decodeURIComponent(params.sheetName as string);
+  const sheetName = params?.sheetName ? decodeURIComponent(params.sheetName as string) : '';
 
   const [sheet, setSheet] = useState<MonthlySheet | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,6 +26,7 @@ export default function BulanPage() {
   const [showEditIncomeModal, setShowEditIncomeModal] = useState(false);
 
   const fetchSheet = async (showRefreshIndicator = false) => {
+    if (!sheetName) return;
     if (showRefreshIndicator) setIsRefreshing(true);
     try {
       const res = await fetch(`/api/sheets/${encodeURIComponent(sheetName)}`);

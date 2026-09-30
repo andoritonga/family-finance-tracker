@@ -1,6 +1,5 @@
-const CACHE_NAME = 'apbk-cache-v1';
+const CACHE_NAME = 'apbk-cache-v3';
 const STATIC_ASSETS = [
-  '/',
   '/manifest.webmanifest',
   '/favicon.png',
   '/icons/icon-192x192.png',
@@ -21,6 +20,7 @@ self.addEventListener('activate', (event) => {
       Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('[SW] Clearing old cache:', key);
             return caches.delete(key);
           }
         })
@@ -30,26 +30,19 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// DO NOT cache HTML pages, API routes, or Next.js RSC bundles.
+// Only cache static images and manifest for PWA offline installability.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Network only for API routes to always keep Google Sheets data fresh
-  if (url.pathname.startsWith('/api/')) {
+  // If requesting a static icon/manifest, serve from cache if available
+  if (STATIC_ASSETS.includes(url.pathname)) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => cached || fetch(event.request))
+    );
     return;
   }
 
-  // Stale-while-revalidate or Network-first for pages
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (response && response.status === 200 && event.request.method === 'GET') {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return response;
-      })
-      .catch(() => caches.match(event.request))
-  );
+  // All other requests (pages, API, Next.js chunks, RSC) go directly to network
+  return;
 });
