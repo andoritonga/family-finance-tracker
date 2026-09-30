@@ -79,7 +79,9 @@ export function ExpenseTable({
     const targetSelisih = targetAktual !== null ? item.budget - targetAktual : item.budget;
 
     // Auto-checklist rule:
-    // When selisih reaches 0 (or targetAktual >= budget), mark checklist as true automatically
+    // If checklist was explicitly specified (e.g. from toggleChecklist), use it.
+    // If only newAktual was changed manually:
+    // When selisih reaches 0 (or targetAktual >= budget), mark checklist as true automatically, else false.
     let targetChecklist: boolean;
     if (newChecklist !== undefined) {
       targetChecklist = newChecklist;
@@ -87,7 +89,7 @@ export function ExpenseTable({
       if (targetAktual !== null && targetSelisih <= 0) {
         targetChecklist = true;
       } else {
-        targetChecklist = item.checklist;
+        targetChecklist = false;
       }
     } else {
       targetChecklist = item.checklist;
@@ -164,7 +166,16 @@ export function ExpenseTable({
   };
 
   const toggleChecklist = (item: ExpenseItem) => {
-    handleUpdate(item, undefined, !item.checklist);
+    const nextChecklist = !item.checklist;
+    if (nextChecklist) {
+      // User mencentang item:
+      // Otomatis terisi full actual budget-nya sehingga selisihnya langsung jadi 0
+      handleUpdate(item, item.budget, true);
+    } else {
+      // User membatalkan centang:
+      // Kosongkan kembali aktual sehingga selisih kembali ke total budget
+      handleUpdate(item, null, false);
+    }
   };
 
   const openEditModal = (item: ExpenseItem) => {

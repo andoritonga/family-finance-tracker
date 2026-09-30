@@ -214,18 +214,11 @@ export async function PUT(
       });
     }
 
-    // Otomatis pasang formula checklist jika budget / aktual diubah dan checklist tidak di-toggle manual
-    if (checklist === undefined && (budget !== undefined || aktual !== undefined)) {
+    // Selalu pertahankan formula checklist otomatis di spreadsheet agar konsisten
+    if (checklist !== undefined || budget !== undefined || aktual !== undefined) {
       updateData.push({
         range: `'${sheetName}'!F${sheetRow}`,
         values: [[`=IF(E${sheetRow}=0, TRUE, FALSE)`]],
-      });
-    }
-
-    if (checklist !== undefined) {
-      updateData.push({
-        range: `'${sheetName}'!F${sheetRow}`,
-        values: [[checklist ? 'TRUE' : 'FALSE']],
       });
     }
 
