@@ -41,3 +41,7 @@ ando-main-mgmt-*.json
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# cloudflare & open-next
+.open-next/
+.wrangler/
