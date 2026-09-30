@@ -27,7 +27,7 @@ export async function GET() {
   }
 
   return NextResponse.json({
-    deployVersion: 'v2-opennext-debug-0148913',
+    deployVersion: 'v3-debug-stack',
     time: new Date().toISOString(),
     status: {
       hasServiceAccountKey: Boolean(serviceAccountKey && serviceAccountKey.length > 0),

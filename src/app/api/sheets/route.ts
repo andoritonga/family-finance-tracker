@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Error fetching sheets:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch sheets', details: error.message },
+      { error: 'Failed to fetch sheets', details: error.message, stack: error.stack },
       { status: 500 }
     );
   }
