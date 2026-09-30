@@ -1,4 +1,31 @@
 import { google } from 'googleapis';
+import { Gaxios } from 'gaxios';
+
+// 1. Polyfill window so hasFetch() evaluates to true in workerd
+if (typeof (globalThis as any).window === 'undefined') {
+  (globalThis as any).window = globalThis;
+}
+
+// 2. Patch Gaxios default adapter to use native Cloudflare Workers fetch instead of node-fetch / https.request
+if (Gaxios && Gaxios.prototype) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (Gaxios.prototype as any)._defaultAdapter = async function (opts: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { agent, body, ...fetchOpts } = opts;
+    const method = (opts.method || 'GET').toUpperCase();
+    const init: RequestInit = {
+      ...fetchOpts,
+      method,
+      headers: opts.headers || {},
+    };
+    if (method !== 'GET' && method !== 'HEAD' && body !== undefined) {
+      init.body = body;
+    }
+    const res = await globalThis.fetch(opts.url, init);
+    const data = await this.getResponseData(opts, res);
+    return this.translateResponse(opts, res, data);
+  };
+}
 
 export function getEnv(key: string): string {
   if (typeof process !== 'undefined' && process.env && process.env[key]) {
