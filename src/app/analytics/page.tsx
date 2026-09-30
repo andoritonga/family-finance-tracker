@@ -540,6 +540,7 @@ export default function AnalyticsPage() {
                       <td className="py-3.5 px-4 text-center">
                         <Link
                           href={`/bulan/${encodeURIComponent(t.name)}`}
+                          prefetch={false}
                           className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                         >
                           Lihat Detail →

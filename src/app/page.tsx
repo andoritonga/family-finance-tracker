@@ -125,6 +125,7 @@ export default function Dashboard() {
 
                   <Link
                     href={`/bulan/${encodeURIComponent(currentSheet.name)}`}
+                    prefetch={false}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors"
                   >
                     Buka Detail <span>→</span>
@@ -220,6 +221,7 @@ export default function Dashboard() {
 
                       <Link
                         href={`/bulan/${encodeURIComponent(sheet.name)}`}
+                        prefetch={false}
                         className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
                       >
                         Buka Lembar <span>→</span>
