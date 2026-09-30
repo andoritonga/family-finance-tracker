@@ -7,6 +7,7 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
     setMounted(true);
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -21,6 +22,7 @@ export function ThemeToggle() {
   }, []);
 
   const toggleTheme = () => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
     if (theme === 'light') {
       setTheme('dark');
       document.documentElement.classList.add('dark');
