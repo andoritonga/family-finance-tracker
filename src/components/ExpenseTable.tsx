@@ -390,6 +390,11 @@ export function ExpenseTable({
                     <span className="font-semibold text-slate-700 dark:text-slate-200 tabular-nums">
                       {formatRupiah(item.budget)}
                     </span>
+                    {totalMonthBudget > 0 && item.budget > 0 && (
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500 block">
+                        {((item.budget / totalMonthBudget) * 100).toFixed(1)}% bulan ini
+                      </span>
+                    )}
                   </div>
 
                   {/* Aktual (Inline or tap to edit) */}
@@ -527,14 +532,14 @@ export function ExpenseTable({
                       <td
                         onClick={() => openEditModal(item)}
                         className="py-3.5 px-4 text-right tabular-nums cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                        title="Klik untuk mengedit anggaran"
+                        title={`Klik untuk mengedit anggaran. Porsi pos ini: ${((item.budget / totalMonthBudget) * 100).toFixed(1)}% dari total alokasi pengeluaran bulan ini (${formatRupiah(totalMonthBudget)})`}
                       >
                         <div className="font-medium text-slate-700 dark:text-slate-200">
                           {formatRupiah(item.budget)}
                         </div>
                         {totalMonthBudget > 0 && item.budget > 0 && (
                           <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
-                            {((item.budget / totalMonthBudget) * 100).toFixed(1)}% total
+                            {((item.budget / totalMonthBudget) * 100).toFixed(1)}% bulan ini
                           </div>
                         )}
                       </td>
