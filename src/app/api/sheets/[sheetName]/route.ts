@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSheets, SPREADSHEET_ID } from '@/lib/google-sheets';
+import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetData, parseSheetName } from '@/lib/sheet-helpers';
 import { cache } from '@/lib/cache';
 
@@ -30,12 +30,12 @@ export async function GET(
     const sheets = getSheets();
     const [fmtRes, fmlRes] = await Promise.all([
       sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
+        spreadsheetId: getSpreadsheetId(),
         range: `'${sheetName}'!A:H`,
         valueRenderOption: 'FORMATTED_VALUE',
       }),
       sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
+        spreadsheetId: getSpreadsheetId(),
         range: `'${sheetName}'!A:H`,
         valueRenderOption: 'FORMULA',
       }),
@@ -93,12 +93,12 @@ export async function PUT(
       const sheets = getSheets();
       const [fmtRes, fmlRes] = await Promise.all([
         sheets.spreadsheets.values.get({
-          spreadsheetId: SPREADSHEET_ID,
+          spreadsheetId: getSpreadsheetId(),
           range: `'${sheetName}'!A:H`,
           valueRenderOption: 'FORMATTED_VALUE',
         }),
         sheets.spreadsheets.values.get({
-          spreadsheetId: SPREADSHEET_ID,
+          spreadsheetId: getSpreadsheetId(),
           range: `'${sheetName}'!A:H`,
           valueRenderOption: 'FORMULA',
         }),
@@ -132,7 +132,7 @@ export async function PUT(
 
       if (nabungRowNumber > 0) {
         await sheets.spreadsheets.values.update({
-          spreadsheetId: SPREADSHEET_ID,
+          spreadsheetId: getSpreadsheetId(),
           range: `'${sheetName}'!A${nabungRowNumber}:G${nabungRowNumber}`,
           valueInputOption: 'USER_ENTERED',
           requestBody: {
@@ -150,7 +150,7 @@ export async function PUT(
       } else {
         nabungRowNumber = totalRowNumber + 2;
         await sheets.spreadsheets.values.update({
-          spreadsheetId: SPREADSHEET_ID,
+          spreadsheetId: getSpreadsheetId(),
           range: `'${sheetName}'!A${nabungRowNumber}:G${nabungRowNumber}`,
           valueInputOption: 'USER_ENTERED',
           requestBody: {
@@ -238,7 +238,7 @@ export async function PUT(
 
     if (updateData.length > 0) {
       await sheets.spreadsheets.values.batchUpdate({
-        spreadsheetId: SPREADSHEET_ID,
+        spreadsheetId: getSpreadsheetId(),
         requestBody: {
           valueInputOption: 'USER_ENTERED',
           data: updateData,
@@ -273,7 +273,7 @@ export async function DELETE(
     }
 
     const sheets = getSheets();
-    const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+    const meta = await sheets.spreadsheets.get({ spreadsheetId: getSpreadsheetId() });
     const targetSheet = meta.data.sheets?.find((s) => s.properties?.title === sheetName);
     if (!targetSheet || targetSheet.properties?.sheetId === undefined) {
       return NextResponse.json({ error: 'Sheet tidak ditemukan' }, { status: 404 });
@@ -284,7 +284,7 @@ export async function DELETE(
     const deleteRowIndex0Based = rowIndex + 1;
 
     await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: getSpreadsheetId(),
       requestBody: {
         requests: [
           {
@@ -333,7 +333,7 @@ export async function POST(
 
     // 1. Get sheetId for batchUpdate insertDimension
     const meta = await sheets.spreadsheets.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: getSpreadsheetId(),
     });
     const targetSheet = meta.data.sheets?.find(
       s => s.properties?.title === sheetName
@@ -345,7 +345,7 @@ export async function POST(
 
     // 2. Fetch current rows to find where items end
     const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: getSpreadsheetId(),
       range: `'${sheetName}'!A:H`,
     });
 
@@ -371,7 +371,7 @@ export async function POST(
     const numBudget = typeof budget === 'number' ? budget : parseInt(String(budget || 0).replace(/[^0-9-]/g, ''), 10) || 0;
 
     await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: getSpreadsheetId(),
       requestBody: {
         requests: [
           {
@@ -391,7 +391,7 @@ export async function POST(
 
     // 4. Populate values into the newly inserted row
     await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: getSpreadsheetId(),
       range: `'${sheetName}'!A${newRow1Based}:H${newRow1Based}`,
       valueInputOption: 'USER_ENTERED',
       requestBody: {

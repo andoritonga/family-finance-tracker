@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSheets, SPREADSHEET_ID } from '@/lib/google-sheets';
+import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetName } from '@/lib/sheet-helpers';
 import { cache } from '@/lib/cache';
 
@@ -18,8 +18,9 @@ export async function GET(request: NextRequest) {
     }
 
     const sheets = getSheets();
+    const spreadsheetId = getSpreadsheetId();
     const response = await sheets.spreadsheets.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId,
     });
     
     const allSheets = response.data.sheets || [];

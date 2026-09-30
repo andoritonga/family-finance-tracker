@@ -1,24 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSheets, SPREADSHEET_ID } from '@/lib/google-sheets';
+import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetName, getSheetName, parseSheetData } from '@/lib/sheet-helpers';
 
 export async function POST(request: NextRequest) {
   try {
     const sheets = getSheets();
+    const spreadsheetId = getSpreadsheetId();
     
     // Parse body if present
     let body = {};
     try {
       body = await request.json();
-    } catch (e) {
+    } catch {
       // Body is optional
     }
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { sourceMonth, sourceYear, targetMonth, targetYear } = body as any;
     
     // Get all sheets
     const response = await sheets.spreadsheets.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId,
     });
     
     const allSheets = response.data.sheets || [];
@@ -66,12 +68,12 @@ export async function POST(request: NextRequest) {
     // 1. Fetch source data (both formatted and formulas)
     const [sourceDataRes, sourceFormulaRes] = await Promise.all([
       sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
+        spreadsheetId,
         range: `'${source!.name}'!A:H`,
         valueRenderOption: 'FORMATTED_VALUE',
       }),
       sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
+        spreadsheetId,
         range: `'${source!.name}'!A:H`,
         valueRenderOption: 'FORMULA',
       }),
@@ -83,7 +85,7 @@ export async function POST(request: NextRequest) {
     
     // 2. Create new sheet
     await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId,
       requestBody: {
         requests: [
           {
@@ -187,7 +189,7 @@ export async function POST(request: NextRequest) {
 
     // 4. Update the new sheet with values
     await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId,
       range: `'${targetName}'!A1`,
       valueInputOption: 'USER_ENTERED', // Needed for formulas to be evaluated
       requestBody: {

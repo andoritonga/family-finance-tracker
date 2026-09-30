@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSheets, SPREADSHEET_ID } from '@/lib/google-sheets';
+import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetData, parseSheetName } from '@/lib/sheet-helpers';
 import { cache } from '@/lib/cache';
 
@@ -20,10 +20,11 @@ export async function GET(request: NextRequest) {
     }
 
     const sheets = getSheets();
+    const spreadsheetId = getSpreadsheetId();
 
     // 1. Get all sheet metadata
     const meta = await sheets.spreadsheets.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId,
     });
 
     const allSheetList = meta.data.sheets || [];
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
     // 2. Fetch all monthly sheets in a single batch request
     const batchRanges = validMonthlySheets.map((s) => `'${s.name}'!A:H`);
     const batchRes = await sheets.spreadsheets.values.batchGet({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId,
       ranges: batchRanges,
     });
 

@@ -1,12 +1,45 @@
 import { google } from 'googleapis';
 
-export const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || '';
+export function getEnv(key: string): string {
+  if (typeof process !== 'undefined' && process.env && process.env[key]) {
+    return process.env[key]!;
+  }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { getCloudflareContext } = require('@opennextjs/cloudflare');
+    const ctx = getCloudflareContext();
+    if (ctx && ctx.env && ctx.env[key]) {
+      return String(ctx.env[key]);
+    }
+  } catch {
+    // Cloudflare context not available or outside request
+  }
+  return '';
+}
+
+export function getSpreadsheetId(): string {
+  return getEnv('GOOGLE_SPREADSHEET_ID') || '';
+}
+
+// Backwards-compatible export that evaluates dynamically
+export const SPREADSHEET_ID = new Proxy(String, {
+  apply: () => getSpreadsheetId(),
+  get: (_target, prop) => {
+    const val = getSpreadsheetId();
+    if (prop === Symbol.toPrimitive || prop === 'toString' || prop === 'valueOf') {
+      return () => val;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const member = (val as any)[prop];
+    return typeof member === 'function' ? member.bind(val) : member;
+  },
+}) as unknown as string;
 
 export function getSheets() {
   let auth;
 
   // 1. Direct JSON string or Base64 JSON in GOOGLE_SERVICE_ACCOUNT_KEY
-  const rawKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  const rawKey = getEnv('GOOGLE_SERVICE_ACCOUNT_KEY');
   if (rawKey && rawKey.trim()) {
     try {
       let jsonStr = rawKey.trim();
@@ -36,8 +69,8 @@ export function getSheets() {
   }
 
   // 2. Individual environment variables (EMAIL & PRIVATE_KEY)
-  const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || process.env.GOOGLE_CLIENT_EMAIL;
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+  const clientEmail = getEnv('GOOGLE_SERVICE_ACCOUNT_EMAIL') || getEnv('GOOGLE_CLIENT_EMAIL');
+  const privateKey = getEnv('GOOGLE_PRIVATE_KEY');
   if (clientEmail && privateKey) {
     try {
       const formattedKey = privateKey.replace(/\\n/g, '\n');
@@ -45,7 +78,7 @@ export function getSheets() {
         credentials: {
           client_email: clientEmail.trim(),
           private_key: formattedKey,
-          project_id: process.env.GOOGLE_PROJECT_ID,
+          project_id: getEnv('GOOGLE_PROJECT_ID') || undefined,
         },
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
       });
@@ -57,7 +90,7 @@ export function getSheets() {
   }
 
   // 3. Fallback to local file path (for local development or Docker)
-  const keyPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH;
+  const keyPath = getEnv('GOOGLE_SERVICE_ACCOUNT_KEY_PATH');
   if (keyPath) {
     try {
       auth = new google.auth.GoogleAuth({
