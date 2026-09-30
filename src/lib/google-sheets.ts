@@ -21,7 +21,13 @@ if (Gaxios && Gaxios.prototype) {
     if (method !== 'GET' && method !== 'HEAD' && body !== undefined) {
       init.body = body;
     }
-    const res = await globalThis.fetch(opts.url, init);
+    let requestUrl = opts.url;
+    try {
+      requestUrl = new URL(requestUrl).href;
+    } catch {
+      requestUrl = encodeURI(requestUrl);
+    }
+    const res = await globalThis.fetch(requestUrl, init);
     const data = await this.getResponseData(opts, res);
     return this.translateResponse(opts, res, data);
   };

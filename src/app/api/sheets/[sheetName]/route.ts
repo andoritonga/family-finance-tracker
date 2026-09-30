@@ -3,6 +3,9 @@ import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetData, parseSheetName } from '@/lib/sheet-helpers';
 import { cache } from '@/lib/cache';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ sheetName: string }> }
@@ -28,18 +31,19 @@ export async function GET(
     }
 
     const sheets = getSheets();
-    const [fmtRes, fmlRes] = await Promise.all([
-      sheets.spreadsheets.values.get({
-        spreadsheetId: getSpreadsheetId(),
-        range: `'${sheetName}'!A:H`,
-        valueRenderOption: 'FORMATTED_VALUE',
-      }),
-      sheets.spreadsheets.values.get({
-        spreadsheetId: getSpreadsheetId(),
-        range: `'${sheetName}'!A:H`,
-        valueRenderOption: 'FORMULA',
-      }),
-    ]);
+    const spreadsheetId = getSpreadsheetId();
+
+    const fmtRes = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `'${sheetName}'!A:H`,
+      valueRenderOption: 'FORMATTED_VALUE',
+    });
+
+    const fmlRes = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `'${sheetName}'!A:H`,
+      valueRenderOption: 'FORMULA',
+    });
 
     const rows = fmtRes.data.values || [];
     const formulaRows = fmlRes.data.values || [];
@@ -73,7 +77,7 @@ export async function GET(
   } catch (error: any) {
     console.error(`Error fetching sheet:`, error);
     return NextResponse.json(
-      { error: 'Failed to fetch sheet data', details: error.message },
+      { error: 'Failed to fetch sheet data', details: error.message, stack: error.stack },
       { status: 500 }
     );
   }
