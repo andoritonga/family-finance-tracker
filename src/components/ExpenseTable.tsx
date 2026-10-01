@@ -323,12 +323,12 @@ export function ExpenseTable({
                 {/* Header Row: Checkbox + Title + Rekening Badge */}
                 <div className="flex items-start justify-between gap-2.5 mb-2.5">
                   <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                    {/* Checkbox button (Big comfortable tap target) */}
+                    {/* Checkbox button (Comfortable touch target with haptic scale effect) */}
                     <button
                       type="button"
                       onClick={() => toggleChecklist(item)}
                       disabled={isBeingUpdated}
-                      className={`w-7 h-7 flex-shrink-0 mt-0.5 rounded-lg flex items-center justify-center transition-all ${
+                      className={`w-9 h-9 flex-shrink-0 rounded-xl flex items-center justify-center transition-all active:scale-90 ${
                         isChecked
                           ? 'bg-emerald-500 text-white shadow-xs'
                           : 'border-2 border-slate-300 dark:border-slate-600 hover:border-indigo-500 bg-white dark:bg-slate-800'
@@ -336,9 +336,9 @@ export function ExpenseTable({
                       aria-label={isChecked ? 'Tandai belum bayar' : 'Tandai sudah bayar'}
                     >
                       {isBeingUpdated ? (
-                        <span className="w-3.5 h-3.5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                        <span className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                       ) : isChecked ? (
-                        <span className="text-xs font-black">✓</span>
+                        <span className="text-sm font-black">✓</span>
                       ) : null}
                     </button>
 
@@ -372,7 +372,7 @@ export function ExpenseTable({
                     )}
                     <button
                       onClick={() => openEditModal(item)}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 active:scale-90 transition-all"
                       title="Edit Item"
                     >
                       ✏️

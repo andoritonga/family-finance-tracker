@@ -48,6 +48,11 @@ export function BulanClient({ sheetName }: BulanClientProps) {
 
   useEffect(() => {
     fetchSheet();
+    const handleQuickAction = () => {
+      setShowAddModal(true);
+    };
+    window.addEventListener('apbk:quick-action', handleQuickAction);
+    return () => window.removeEventListener('apbk:quick-action', handleQuickAction);
   }, [sheetName]);
 
   const calculatePosisi = (data: MonthlySheet) => {
@@ -113,46 +118,47 @@ export function BulanClient({ sheetName }: BulanClientProps) {
   return (
     <div className="space-y-8">
       {/* Breadcrumbs & Header */}
-      <div>
-        <nav className="flex items-center gap-2 text-xs font-medium text-slate-400 dark:text-slate-500 mb-2">
-          <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+      <div className="sticky top-0 z-30 -mx-3.5 px-3.5 py-2.5 mb-5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/70 dark:border-slate-800/80 sm:relative sm:top-auto sm:mx-0 sm:px-0 sm:py-0 sm:bg-transparent sm:dark:bg-transparent sm:backdrop-blur-none sm:border-none sm:mb-0 transition-all">
+        <nav className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400 dark:text-slate-500 mb-2">
+          <Link href="/" prefetch={false} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
             Dashboard
           </Link>
           <span>/</span>
           <span className="text-slate-700 dark:text-slate-300 font-semibold">{sheet.name}</span>
         </nav>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <Link
               href="/"
-              className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 transition-all shadow-sm"
+              prefetch={false}
+              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 active:scale-95 transition-all shadow-xs shrink-0"
               title="Kembali ke Dashboard"
             >
               ←
             </Link>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
                   {sheet.name}
                 </h1>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800">
+                <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 shrink-0">
                   {completedCount}/{totalCount} Dibayar
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Rincian Anggaran, Aktual, dan Pembagian Rekening
+              <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Rincian Anggaran, Realisasi, dan Alokasi Rekening
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 shrink-0">
             <ThemeToggle />
 
             <button
               onClick={() => fetchSheet(true)}
               disabled={isRefreshing}
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 active:scale-95 transition-all shadow-sm"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 active:scale-95 transition-all shadow-xs"
               title="Sinkronkan data dengan Google Sheets"
             >
               <span className={isRefreshing ? 'animate-spin' : ''}>🔄</span>
@@ -163,7 +169,7 @@ export function BulanClient({ sheetName }: BulanClientProps) {
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
+              className="hidden sm:inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
             >
               <span>➕</span>
               <span>Tambah Item</span>
@@ -171,6 +177,16 @@ export function BulanClient({ sheetName }: BulanClientProps) {
           </div>
         </div>
       </div>
+
+      {/* Mobile Floating Action Button (FAB) */}
+      <button
+        type="button"
+        onClick={() => setShowAddModal(true)}
+        className="md:hidden fixed bottom-20 right-4 z-30 w-13 h-13 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-400/40 dark:shadow-none active:scale-90 transition-transform"
+        aria-label="Tambah Pos Pengeluaran"
+      >
+        ➕
+      </button>
 
       {/* Summary Cards */}
       <SummaryCards

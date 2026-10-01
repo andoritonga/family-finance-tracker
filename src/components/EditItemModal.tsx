@@ -128,8 +128,9 @@ export function EditItemModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-700/80">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 animate-fadeIn">
+      <div className="bg-white dark:bg-slate-800 rounded-t-[2rem] sm:rounded-3xl p-5 sm:p-7 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-700/80 max-h-[92vh] overflow-y-auto pb-[max(1.5rem,env(safe-area-inset-bottom))] animate-slideUp sm:animate-fadeIn">
+        <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto mb-4 sm:hidden" />
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-lg">

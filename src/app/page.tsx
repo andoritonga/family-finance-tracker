@@ -27,6 +27,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchSheets();
+    const handleQuickAction = () => {
+      setShowModal(true);
+    };
+    window.addEventListener('apbk:quick-action', handleQuickAction);
+    return () => window.removeEventListener('apbk:quick-action', handleQuickAction);
   }, []);
 
   const fetchSheets = async () => {
@@ -89,23 +94,57 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
+          {/* Horizontal Scrollable Month Pills Carousel */}
+          {sheets.length > 0 && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Pilih Periode Lembar
+                </span>
+                <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                  {sheets.length} Bulan
+                </span>
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 -mx-3.5 px-3.5 sm:mx-0">
+                {sheets.map((s) => {
+                  const isSelected = s.name === selectedMonthName;
+                  return (
+                    <button
+                      key={s.name}
+                      type="button"
+                      onClick={() => handleMonthChange(s.name)}
+                      className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs ${
+                        isSelected
+                          ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-300 dark:shadow-none font-bold scale-[1.02]'
+                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80 hover:bg-slate-50 dark:hover:bg-slate-750'
+                      }`}
+                    >
+                      <span>🗓️</span>
+                      <span>{s.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Active Month Showcase */}
           {currentSheet && (
             <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm">
               {/* Month Header & Quick Switcher */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 mb-5 sm:mb-6">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-lg">
-                      Ringkasan Bulanan
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-lg">
+                      Ringkasan Aktif
                     </span>
                     {loadingDetail && (
                       <span className="text-xs text-slate-400 dark:text-slate-500 animate-pulse">
-                        Memuat...
+                        Memuat data...
                       </span>
                     )}
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mt-1">
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
                     {currentSheet.name}
                   </h2>
                 </div>
@@ -114,7 +153,7 @@ export default function Dashboard() {
                   <select
                     value={selectedMonthName}
                     onChange={(e) => handleMonthChange(e.target.value)}
-                    className="text-sm font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3.5 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                    className="hidden sm:block text-sm font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3.5 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
                   >
                     {sheets.map((s) => (
                       <option key={s.name} value={s.name}>
@@ -126,9 +165,10 @@ export default function Dashboard() {
                   <Link
                     href={`/bulan/${encodeURIComponent(currentSheet.name)}`}
                     prefetch={false}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
                   >
-                    Buka Detail <span>→</span>
+                    <span>Buka Rincian Pos</span>
+                    <span>→</span>
                   </Link>
                 </div>
               </div>
