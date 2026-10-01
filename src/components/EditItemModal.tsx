@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ExpenseItem } from '@/lib/types';
 import { formatRupiah, parseRupiah } from '@/lib/format';
+import { useLanguage } from '@/lib/i18n';
 
 interface EditItemModalProps {
   item: ExpenseItem;
@@ -21,6 +22,7 @@ export function EditItemModal({
   onClose,
   onSuccess,
 }: EditItemModalProps) {
+  const { t, language, formatSheetMonth } = useLanguage();
   const [pengeluaran, setPengeluaran] = useState(item.pengeluaran);
   const [budgetDisplay, setBudgetDisplay] = useState(formatRupiah(item.budget));
   const [aktualDisplay, setAktualDisplay] = useState(
@@ -99,7 +101,7 @@ export function EditItemModal({
   };
 
   const handleDelete = async () => {
-    if (!window.confirm(`Yakin ingin menghapus item "${item.pengeluaran}"?`)) {
+    if (!window.confirm(language === 'id' ? `Yakin ingin menghapus item "${item.pengeluaran}"?` : `Are you sure you want to delete "${item.pengeluaran}"?`)) {
       return;
     }
 
@@ -115,7 +117,7 @@ export function EditItemModal({
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || data.details || 'Gagal menghapus item.');
+        throw new Error(data.error || data.details || (language === 'id' ? 'Gagal menghapus item.' : 'Failed to delete item.'));
       }
 
       onSuccess();
@@ -138,10 +140,10 @@ export function EditItemModal({
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                Edit Pengeluaran
+                {t('editItemTitle')}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Item No. {item.no} — {sheetName}
+                Item No. {item.no} — {formatSheetMonth(sheetName)}
               </p>
             </div>
           </div>
@@ -165,14 +167,14 @@ export function EditItemModal({
           {/* Nama Pengeluaran */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              Nama Pengeluaran <span className="text-rose-500">*</span>
+              {t('expenseName')} <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
               required
               value={pengeluaran}
               onChange={(e) => setPengeluaran(e.target.value)}
-              placeholder="Nama pengeluaran..."
+              placeholder={t('expenseNamePlaceholder')}
               className="w-full text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
             />
           </div>
@@ -181,7 +183,7 @@ export function EditItemModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                Target Anggaran <span className="text-rose-500">*</span>
+                {t('colBudget')} <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -195,13 +197,13 @@ export function EditItemModal({
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                Aktual Terpakai
+                {t('colActual')}
               </label>
               <input
                 type="text"
                 value={aktualDisplay}
                 onChange={handleAktualChange}
-                placeholder="Rp 0 (opsional)"
+                placeholder={language === 'id' ? 'Rp 0 (opsional)' : 'Rp 0 (optional)'}
                 className="w-full text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none tabular-nums transition-all"
               />
             </div>
@@ -211,14 +213,14 @@ export function EditItemModal({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Rekening / Posisi
+                {t('accountPosition')}
               </label>
               <button
                 type="button"
                 onClick={() => setIsCustomPosisi(!isCustomPosisi)}
                 className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
               >
-                {isCustomPosisi ? 'Pilih Rekening Ada' : '+ Rekening Baru'}
+                {isCustomPosisi ? (language === 'id' ? 'Pilih Rekening Ada' : 'Choose Existing') : t('newAccountOption')}
               </button>
             </div>
 
@@ -227,7 +229,7 @@ export function EditItemModal({
                 type="text"
                 value={customPosisi}
                 onChange={(e) => setCustomPosisi(e.target.value)}
-                placeholder="Nama rekening baru..."
+                placeholder={t('newAccountPlaceholder')}
                 className="w-full text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
               />
             ) : (
@@ -251,13 +253,13 @@ export function EditItemModal({
           {/* Catatan / Keterangan */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              Catatan / Keterangan
+              {t('notes')}
             </label>
             <input
               type="text"
               value={keterangan}
               onChange={(e) => setKeterangan(e.target.value)}
-              placeholder="Catatan tambahan..."
+              placeholder={t('notesPlaceholder')}
               className="w-full text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
             />
           </div>
@@ -270,7 +272,7 @@ export function EditItemModal({
               className="px-3.5 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors font-semibold text-xs flex items-center gap-1.5"
             >
               <span>🗑️</span>
-              <span>{isDeleting ? 'Menghapus...' : 'Hapus Item'}</span>
+              <span>{isDeleting ? t('deleting') : t('delete')}</span>
             </button>
 
             <div className="flex items-center gap-2">
@@ -280,7 +282,7 @@ export function EditItemModal({
                 className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-semibold text-xs"
                 disabled={loading || isDeleting}
               >
-                Batal
+                {t('cancel')}
               </button>
               <button
                 type="submit"
@@ -290,12 +292,12 @@ export function EditItemModal({
                 {loading ? (
                   <>
                     <span className="animate-spin text-sm">🔄</span>
-                    <span>Menyimpan...</span>
+                    <span>{t('saving')}</span>
                   </>
                 ) : (
                   <>
                     <span>💾</span>
-                    <span>Simpan Perubahan</span>
+                    <span>{t('save')}</span>
                   </>
                 )}
               </button>

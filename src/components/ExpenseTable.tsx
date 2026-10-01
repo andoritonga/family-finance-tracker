@@ -468,19 +468,17 @@ export function ExpenseTable({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-200/80 dark:border-slate-700/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                <th className="py-3.5 px-4 w-12 text-center">{t('colNo')}</th>
-                <th className="py-3.5 px-4">{t('colExpense')}</th>
-                <th className="py-3.5 px-4 text-right">{t('colBudget')}</th>
-                <th className="py-3.5 px-4 text-right">
-                  <span className="inline-flex items-center gap-1">
-                    {t('colActual')} <span className="text-[10px] text-slate-400 font-normal">({t('clickToEdit')})</span>
-                  </span>
+                <th className="py-3.5 px-4 w-12 text-center whitespace-nowrap">{t('colNo')}</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">{t('colExpense')}</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap">{t('colBudget')}</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap" title={t('clickToEdit')}>
+                  {t('colActual')}
                 </th>
-                <th className="py-3.5 px-4 text-right">{t('colDifference')}</th>
-                <th className="py-3.5 px-4">{t('colAccount')}</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap">{t('colDifference')}</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">{t('colAccount')}</th>
                 <th className="py-3.5 px-4">{t('colNotes')}</th>
-                <th className="py-3.5 px-4 text-center w-16">{t('colPay')}</th>
-                <th className="py-3.5 px-4 text-center w-12">{t('colAction')}</th>
+                <th className="py-3.5 px-4 text-center w-16 whitespace-nowrap">{t('colPay')}</th>
+                <th className="py-3.5 px-4 text-center w-12 whitespace-nowrap">{t('colAction')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-sm">
@@ -488,10 +486,10 @@ export function ExpenseTable({
                 <tr>
                   <td colSpan={9} className="py-12 text-center text-slate-400 dark:text-slate-500">
                     <p className="text-base font-medium text-slate-600 dark:text-slate-300">
-                      Tidak ada pengeluaran yang cocok
+                      {t('noExpenseFound')}
                     </p>
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                      Coba sesuaikan filter pencarian atau tambahkan item baru
+                      {t('noExpenseFoundDesc')}
                     </p>
                   </td>
                 </tr>
@@ -526,7 +524,7 @@ export function ExpenseTable({
                               ? 'text-slate-400 dark:text-slate-500 line-through'
                               : 'text-slate-800 dark:text-slate-200'
                           }`}
-                          title="Klik untuk mengedit item ini"
+                          title={language === 'id' ? 'Klik untuk mengedit item ini' : 'Click to edit this item'}
                         >
                           {item.pengeluaran}
                         </span>
@@ -543,14 +541,14 @@ export function ExpenseTable({
                         </div>
                         {totalMonthBudget > 0 && item.budget > 0 && (
                           <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
-                            {((item.budget / totalMonthBudget) * 100).toFixed(1)}% bulan ini
+                            {((item.budget / totalMonthBudget) * 100).toFixed(1)}% {language === 'id' ? 'bulan ini' : 'this month'}
                           </div>
                         )}
                       </td>
 
                       {/* Aktual (Inline Edit) */}
                       <td
-                        className="py-3.5 px-4 text-right cursor-pointer"
+                        className="py-3.5 px-4 text-right cursor-pointer whitespace-nowrap"
                         onClick={() => !isBeingEdited && handleAktualClick(item)}
                       >
                         {isBeingEdited ? (
@@ -568,7 +566,7 @@ export function ExpenseTable({
                             />
                           </div>
                         ) : (
-                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-700/60 transition-colors group-hover:ring-1 group-hover:ring-slate-200 dark:group-hover:ring-slate-700">
+                          <div className="inline-flex items-center justify-end gap-1.5 px-2.5 py-1 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-700/60 transition-colors group-hover:ring-1 group-hover:ring-slate-200 dark:group-hover:ring-slate-700">
                             <span
                               className={`font-semibold tabular-nums ${
                                 item.aktual !== null && item.aktual !== undefined
@@ -578,7 +576,7 @@ export function ExpenseTable({
                             >
                               {item.aktual !== null && item.aktual !== undefined
                                 ? formatRupiah(item.aktual)
-                                : 'Belum diisi'}
+                                : t('notSet')}
                             </span>
                             <span className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 text-xs transition-colors">
                               ✎
@@ -610,7 +608,7 @@ export function ExpenseTable({
                             className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-lg border hover:opacity-80 transition-opacity ${getPosisiColor(
                               item.posisi
                             )}`}
-                            title="Klik untuk ubah rekening"
+                            title={language === 'id' ? 'Klik untuk ubah rekening' : 'Click to change account'}
                           >
                             {item.posisi}
                           </button>
@@ -623,10 +621,12 @@ export function ExpenseTable({
                       <td
                         onClick={() => openEditModal(item)}
                         className="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400 max-w-xs truncate cursor-pointer hover:text-slate-700 dark:hover:text-slate-200"
-                        title={item.keterangan || 'Klik untuk tambah catatan'}
+                        title={item.keterangan || (language === 'id' ? 'Klik untuk tambah catatan' : 'Click to add note')}
                       >
                         {item.keterangan || (
-                          <span className="text-slate-300 dark:text-slate-600 italic">tambah catatan</span>
+                          <span className="text-slate-300 dark:text-slate-600 italic">
+                            {language === 'id' ? 'tambah catatan' : 'add note'}
+                          </span>
                         )}
                       </td>
 
@@ -648,7 +648,7 @@ export function ExpenseTable({
                         <button
                           onClick={() => openEditModal(item)}
                           className="w-8 h-8 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700 dark:hover:text-indigo-400 flex items-center justify-center transition-colors text-sm"
-                          title="Edit Pengeluaran"
+                          title={t('colAction')}
                         >
                           ✏️
                         </button>

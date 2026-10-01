@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { formatRupiah } from '@/lib/format';
+import { useLanguage } from '@/lib/i18n';
 
 interface EditIncomeModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function EditIncomeModal({
   onClose,
   onSuccess,
 }: EditIncomeModalProps) {
+  const { t, language, formatSheetMonth } = useLanguage();
   const [formula, setFormula] = useState('');
   const [account, setAccount] = useState('Blu Saving Fani');
   const [keterangan, setKeterangan] = useState('Pocket Harta');
@@ -118,10 +120,10 @@ export function EditIncomeModal({
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span>💰</span> Atur Pendapatan & Alokasi Tabungan
+              <span>💰</span> {t('editIncomeTitle')}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Lembar: <span className="font-semibold text-slate-700 dark:text-slate-300">{sheetName}</span>
+              {language === 'id' ? 'Lembar: ' : 'Sheet: '}<span className="font-semibold text-slate-700 dark:text-slate-300">{formatSheetMonth(sheetName)}</span>
             </p>
           </div>
           <button
@@ -142,8 +144,8 @@ export function EditIncomeModal({
           {/* Formula / Rincian Pendapatan */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-              <span>Rincian / Formula Pendapatan Bersama</span>
-              <span className="text-[11px] text-slate-400 font-normal">Mendukung penjumlahan (+)</span>
+              <span>{t('incomeFormula')}</span>
+              <span className="text-[11px] text-slate-400 font-normal">{t('formulaHint')}</span>
             </label>
             <input
               type="text"
@@ -153,27 +155,27 @@ export function EditIncomeModal({
               className="w-full px-4 py-2.5 rounded-xl font-mono text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
             />
             <p className="text-[11px] text-slate-400">
-              💡 Masukkan angka langsung (misal: <code>20000000</code>) atau rincian sumber pendapatan (misal: <code>11500000+3650000+4190000</code>).
+              💡 {t('formulaExpl')}
             </p>
           </div>
 
           {/* Live Preview Box */}
           <div className="p-4 rounded-2xl bg-indigo-50/50 dark:bg-slate-800/60 border border-indigo-100 dark:border-slate-700 space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-600 dark:text-slate-400">Total Pendapatan Terhitung:</span>
+              <span className="text-slate-600 dark:text-slate-400">{t('calculatedTotal')}:</span>
               <span className="font-bold text-slate-900 dark:text-white tabular-nums text-sm">
                 {formatRupiah(calculatedIncome)}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-600 dark:text-slate-400">Total Anggaran Pengeluaran:</span>
+              <span className="text-slate-600 dark:text-slate-400">{t('totalBudgeted')}:</span>
               <span className="font-semibold text-slate-700 dark:text-slate-300 tabular-nums">
                 - {formatRupiah(totalBudget)}
               </span>
             </div>
             <div className="pt-2 border-t border-indigo-100 dark:border-slate-700 flex items-center justify-between">
               <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                Sisa Otomatis Masuk Tabungan:
+                {t('autoSavings')}:
               </span>
               <span className={`font-black text-sm tabular-nums ${
                 estimatedSavings >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
@@ -187,7 +189,7 @@ export function EditIncomeModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Rekening Tujuan Tabungan
+                {t('targetAccount')}
               </label>
               <input
                 type="text"
@@ -200,7 +202,7 @@ export function EditIncomeModal({
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Catatan / Pocket
+                {t('pocketNote')}
               </label>
               <input
                 type="text"
@@ -220,7 +222,7 @@ export function EditIncomeModal({
               disabled={loading}
               className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              Batal
+              {t('cancel')}
             </button>
             <button
               type="submit"
@@ -230,12 +232,12 @@ export function EditIncomeModal({
               {loading ? (
                 <>
                   <span className="animate-spin">🔄</span>
-                  <span>Menyimpan ke Sheets...</span>
+                  <span>{t('saving')}</span>
                 </>
               ) : (
                 <>
                   <span>💾</span>
-                  <span>Simpan Perubahan</span>
+                  <span>{t('save')}</span>
                 </>
               )}
             </button>

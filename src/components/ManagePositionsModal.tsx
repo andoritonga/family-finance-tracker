@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ExpenseItem, PositionSummary } from '@/lib/types';
 import { formatRupiah } from '@/lib/format';
+import { useLanguage } from '@/lib/i18n';
 
 interface ManagePositionsModalProps {
   sheetName: string;
@@ -19,6 +20,7 @@ export function ManagePositionsModal({
   onClose,
   onSuccess,
 }: ManagePositionsModalProps) {
+  const { t, language } = useLanguage();
   const [selectedOldPos, setSelectedOldPos] = useState(summaries[0]?.posisi || '');
   const [newPosName, setNewPosName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -79,10 +81,10 @@ export function ManagePositionsModal({
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                Kelola Rekening / Posisi
+                {t('managePositionsTitle')}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Ubah nama rekening secara massal untuk semua item terkait
+                {t('managePositionsDesc')}
               </p>
             </div>
           </div>
@@ -105,7 +107,7 @@ export function ManagePositionsModal({
         {/* Existing Accounts Overview */}
         <div className="mb-5 space-y-2">
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Daftar Rekening Bulan Ini
+            {t('existingAccounts')}
           </label>
           <div className="max-h-44 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700/60 border border-slate-200 dark:border-slate-700 rounded-2xl">
             {summaries.map((pos) => {
@@ -120,7 +122,7 @@ export function ManagePositionsModal({
                       {pos.posisi}
                     </span>
                     <span className="text-slate-400 dark:text-slate-500 ml-2">
-                      ({count} item)
+                      ({count} {language === 'id' ? 'item' : count > 1 ? 'items' : 'item'})
                     </span>
                   </div>
                   <div className="text-right tabular-nums">
@@ -138,7 +140,7 @@ export function ManagePositionsModal({
         <form onSubmit={handleRename} className="space-y-4 pt-3 border-t border-slate-100 dark:border-slate-700">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              Ganti Nama Rekening Massal
+              {t('bulkRename')}
             </label>
             <div className="grid grid-cols-2 gap-2.5">
               <select
@@ -158,12 +160,14 @@ export function ManagePositionsModal({
                 required
                 value={newPosName}
                 onChange={(e) => setNewPosName(e.target.value)}
-                placeholder="Nama baru..."
+                placeholder={t('renameToPlaceholder')}
                 className="text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
             </div>
             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-              Akan mengubah {affectedItems.length} item pengeluaran yang menggunakan rekening &quot;{selectedOldPos}&quot;.
+              {language === 'id'
+                ? `Akan mengubah ${affectedItems.length} item pengeluaran yang menggunakan rekening "${selectedOldPos}".`
+                : `Will update ${affectedItems.length} expense item(s) using account "${selectedOldPos}".`}
             </p>
           </div>
 
@@ -174,7 +178,7 @@ export function ManagePositionsModal({
               className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-semibold text-xs"
               disabled={loading}
             >
-              Batal
+              {t('cancel')}
             </button>
             <button
               type="submit"
@@ -184,11 +188,11 @@ export function ManagePositionsModal({
               {loading ? (
                 <>
                   <span className="animate-spin text-sm">🔄</span>
-                  <span>Mengubah...</span>
+                  <span>{language === 'id' ? 'Mengubah...' : 'Updating...'}</span>
                 </>
               ) : (
                 <>
-                  <span>Ubah Semua Item</span>
+                  <span>{t('applyRename')}</span>
                 </>
               )}
             </button>

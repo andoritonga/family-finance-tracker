@@ -104,15 +104,19 @@ export function BulanClient({ sheetName }: BulanClientProps) {
     return (
       <div className="text-center py-20 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-8">
         <span className="text-4xl">🔍</span>
-        <h2 className="text-xl font-bold text-slate-800 dark:text-white mt-3">Lembar Tidak Ditemukan</h2>
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mt-3">
+          {language === 'id' ? 'Lembar Tidak Ditemukan' : 'Sheet Not Found'}
+        </h2>
         <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-          Sheet &quot;{sheetName}&quot; tidak dapat diakses atau belum dibuat di spreadsheet.
+          {language === 'id'
+            ? `Sheet "${sheetName}" tidak dapat diakses atau belum dibuat di spreadsheet.`
+            : `Sheet "${sheetName}" could not be accessed or has not been created yet.`}
         </p>
         <Link
           href="/"
           className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition-colors"
         >
-          ← Kembali ke Dashboard
+          ← {t('backToDashboard')}
         </Link>
       </div>
     );

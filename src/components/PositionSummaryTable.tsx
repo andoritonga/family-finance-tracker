@@ -3,12 +3,14 @@
 import React from 'react';
 import { PositionSummary } from '@/lib/types';
 import { formatRupiah } from '@/lib/format';
+import { useLanguage } from '@/lib/i18n';
 
 interface PositionSummaryTableProps {
   summaries: PositionSummary[];
 }
 
 export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
+  const { t, language } = useLanguage();
   if (!summaries || summaries.length === 0) return null;
 
   const totalBudget = summaries.reduce((sum, item) => sum + (item.budget || 0), 0);
@@ -51,16 +53,16 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                 </div>
                 <span
                   className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 tabular-nums flex-shrink-0"
-                  title={`${allocationPercent.toFixed(1)}% dari total anggaran bulanan`}
+                  title={`${allocationPercent.toFixed(1)}% ${language === 'id' ? 'dari total anggaran bulanan' : 'of monthly budget'}`}
                 >
-                  {allocationPercent.toFixed(1)}% alokasi
+                  {allocationPercent.toFixed(1)}% {t('allocation')}
                 </span>
               </div>
 
               {/* Progress Bar */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                  <span>Realisasi Rekening</span>
+                  <span>{t('accountRealization')}</span>
                   <span className="font-bold tabular-nums text-slate-700 dark:text-slate-200">
                     {percent.toFixed(0)}%
                   </span>
@@ -84,7 +86,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                 {/* Anggaran */}
                 <div>
                   <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 block">
-                    Target
+                    {t('targetLabel')}
                   </span>
                   <span className="font-semibold text-slate-700 dark:text-slate-200 tabular-nums text-xs">
                     {formatRupiah(pos.budget)}
@@ -94,7 +96,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                 {/* Terpakai */}
                 <div>
                   <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 block">
-                    Terpakai
+                    {t('spentLabel')}
                   </span>
                   <span className="font-bold text-slate-900 dark:text-white tabular-nums text-xs">
                     {formatRupiah(pos.aktual)}
@@ -104,7 +106,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                 {/* Sisa */}
                 <div className="text-right">
                   <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 block">
-                    Sisa
+                    {t('differenceLabel')}
                   </span>
                   <span
                     className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold tabular-nums ${
@@ -124,13 +126,13 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
         {/* Mobile Total Keseluruhan Card */}
         <div className="p-3.5 sm:p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs font-bold text-indigo-950 dark:text-indigo-200">
-            <span className="uppercase tracking-wider">Total Semua Rekening</span>
-            <span>{overallPercent.toFixed(1)}% Terpakai</span>
+            <span className="uppercase tracking-wider">{t('totalMonthlyExpenses')}</span>
+            <span>{overallPercent.toFixed(1)}% {language === 'id' ? 'Terpakai' : 'Spent'}</span>
           </div>
           <div className="grid grid-cols-3 gap-2 text-xs pt-1 border-t border-indigo-200/50 dark:border-indigo-800/50">
             <div>
               <span className="text-[9px] uppercase font-bold text-indigo-700/70 dark:text-indigo-300/70 block">
-                Total Target
+                {t('targetLabel')}
               </span>
               <span className="font-bold text-slate-800 dark:text-white tabular-nums">
                 {formatRupiah(totalBudget)}
@@ -138,7 +140,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
             </div>
             <div>
               <span className="text-[9px] uppercase font-bold text-indigo-700/70 dark:text-indigo-300/70 block">
-                Total Terpakai
+                {t('spentLabel')}
               </span>
               <span className="font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
                 {formatRupiah(totalAktual)}
@@ -146,7 +148,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
             </div>
             <div className="text-right">
               <span className="text-[9px] uppercase font-bold text-indigo-700/70 dark:text-indigo-300/70 block">
-                Total Sisa
+                {t('differenceLabel')}
               </span>
               <span
                 className={`font-bold tabular-nums ${
@@ -168,12 +170,12 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
           <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="bg-slate-50/80 dark:bg-slate-900/40 border-b border-slate-200/80 dark:border-slate-700/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                <th className="py-3.5 px-4">Rekening / Pos Alokasi</th>
-                <th className="py-3.5 px-4 text-right">Target Anggaran</th>
-                <th className="py-3.5 px-4 text-center">% Porsi Alokasi</th>
-                <th className="py-3.5 px-4 text-right">Aktual Terpakai</th>
-                <th className="py-3.5 px-4 text-right">Sisa / Selisih</th>
-                <th className="py-3.5 px-4 text-center w-44">Realisasi Pos</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">{t('colAccount')}</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap">{t('colBudget')}</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap">{t('budgetShare')}</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap">{t('colActual')}</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap">{t('colDifference')}</th>
+                <th className="py-3.5 px-4 text-center w-44 whitespace-nowrap">{t('accountRealization')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
@@ -202,7 +204,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                     <td className="py-3.5 px-4 text-center">
                       <span
                         className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 tabular-nums"
-                        title={`${allocationPercent.toFixed(1)}% dari total anggaran bulanan`}
+                        title={`${allocationPercent.toFixed(1)}% ${language === 'id' ? 'dari total anggaran bulanan' : 'of monthly budget'}`}
                       >
                         {allocationPercent.toFixed(1)}%
                       </span>
@@ -251,7 +253,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
             {/* Table Total Summary Row */}
             <tfoot>
               <tr className="bg-slate-50 dark:bg-slate-900/60 border-t-2 border-slate-200 dark:border-slate-700 font-bold text-slate-900 dark:text-white text-xs">
-                <td className="py-3.5 px-4 uppercase tracking-wider">Total Keseluruhan</td>
+                <td className="py-3.5 px-4 uppercase tracking-wider">{language === 'id' ? 'Total Keseluruhan' : 'Grand Total'}</td>
                 <td className="py-3.5 px-4 text-right tabular-nums text-sm">
                   {formatRupiah(totalBudget)}
                 </td>
@@ -274,7 +276,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                 </td>
                 <td className="py-3.5 px-4 text-center">
                   <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                    {overallPercent.toFixed(1)}% Realisasi
+                    {overallPercent.toFixed(1)}% {language === 'id' ? 'Realisasi' : 'Realized'}
                   </span>
                 </td>
               </tr>

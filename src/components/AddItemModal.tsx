@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { formatRupiah, parseRupiah } from '@/lib/format';
+import { useLanguage } from '@/lib/i18n';
 
 interface AddItemModalProps {
   sheetName: string;
@@ -16,6 +17,7 @@ export function AddItemModal({
   onClose,
   onSuccess,
 }: AddItemModalProps) {
+  const { t, language } = useLanguage();
   const [pengeluaran, setPengeluaran] = useState('');
   const [budgetDisplay, setBudgetDisplay] = useState('');
   const [posisi, setPosisi] = useState(existingPositions[0] || 'Cash');
@@ -89,10 +91,10 @@ export function AddItemModal({
           </div>
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Tambah Pengeluaran
+              {t('addItemTitle')}
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Menambahkan baris anggaran baru ke lembar {sheetName}
+              {t('addItemDesc')} {sheetName}
             </p>
           </div>
         </div>
@@ -108,7 +110,7 @@ export function AddItemModal({
           {/* Nama Pengeluaran */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              Nama Pengeluaran <span className="text-rose-500">*</span>
+              {t('expenseName')} <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -116,7 +118,7 @@ export function AddItemModal({
               autoFocus
               value={pengeluaran}
               onChange={(e) => setPengeluaran(e.target.value)}
-              placeholder="Contoh: Belanja Pasar, Token Listrik, Service Mobil..."
+              placeholder={t('expenseNamePlaceholder')}
               className="w-full text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
             />
           </div>
@@ -124,7 +126,7 @@ export function AddItemModal({
           {/* Anggaran */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              Target Anggaran (Budget) <span className="text-rose-500">*</span>
+              {t('budgetAmount')} <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -140,14 +142,14 @@ export function AddItemModal({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Posisi Rekening / Dompet
+                {t('accountPosition')}
               </label>
               <button
                 type="button"
                 onClick={() => setIsCustomPosisi(!isCustomPosisi)}
                 className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
               >
-                {isCustomPosisi ? 'Pilih dari Rekening Ada' : '+ Rekening Baru'}
+                {isCustomPosisi ? (language === 'id' ? 'Pilih Rekening Ada' : 'Choose Existing') : t('newAccountOption')}
               </button>
             </div>
 
@@ -156,7 +158,7 @@ export function AddItemModal({
                 type="text"
                 value={customPosisi}
                 onChange={(e) => setCustomPosisi(e.target.value)}
-                placeholder="Nama rekening baru (contoh: Bank Jago, OVO...)"
+                placeholder={t('newAccountPlaceholder')}
                 className="w-full text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
               />
             ) : (
@@ -178,13 +180,13 @@ export function AddItemModal({
           {/* Catatan / Keterangan */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              Catatan / Keterangan <span className="text-slate-400 font-normal">(opsional)</span>
+              {t('notes')} <span className="text-slate-400 font-normal">({language === 'id' ? 'opsional' : 'optional'})</span>
             </label>
             <input
               type="text"
               value={keterangan}
               onChange={(e) => setKeterangan(e.target.value)}
-              placeholder="Catatan tambahan..."
+              placeholder={t('notesPlaceholder')}
               className="w-full text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
             />
           </div>
@@ -196,7 +198,7 @@ export function AddItemModal({
               className="px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-semibold text-xs"
               disabled={loading}
             >
-              Batal
+              {t('cancel')}
             </button>
             <button
               type="submit"
@@ -206,12 +208,12 @@ export function AddItemModal({
               {loading ? (
                 <>
                   <span className="animate-spin text-sm">🔄</span>
-                  <span>Menyimpan ke Sheet...</span>
+                  <span>{t('saving')}</span>
                 </>
               ) : (
                 <>
                   <span>💾</span>
-                  <span>Simpan Pengeluaran</span>
+                  <span>{t('save')}</span>
                 </>
               )}
             </button>

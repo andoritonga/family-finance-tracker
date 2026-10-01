@@ -183,7 +183,7 @@ export default function AnalyticsPage() {
             <div className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Rata-rata Pengeluaran
+                  {t('averageExpenses')}
                 </span>
                 <span className="text-lg">💸</span>
               </div>
@@ -191,7 +191,7 @@ export default function AnalyticsPage() {
                 {formatRupiah(data.kpi.avgMonthlySpend)}
               </p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                Anggaran target: {formatRupiah(data.kpi.avgMonthlyBudget)}
+                {t('targetBudgetLabel')}: {formatRupiah(data.kpi.avgMonthlyBudget)}
               </p>
             </div>
 
@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
             <div className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Total Alokasi Tabungan
+                  {t('totalSavingsAlloc')}
                 </span>
                 <span className="text-lg">🏦</span>
               </div>
@@ -207,10 +207,10 @@ export default function AnalyticsPage() {
                 {formatRupiah(data.kpi.totalAnnualSavings || 0)}
               </p>
               <div className="mt-1 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
-                <span>Rata-rata: {formatRupiah(data.kpi.avgMonthlySavings || 0)}/bln</span>
+                <span>{language === 'id' ? 'Rata-rata' : 'Average'}: {formatRupiah(data.kpi.avgMonthlySavings || 0)}{t('perMonth')}</span>
                 {data.kpi.savingsRate !== undefined && (
                   <span className="font-semibold text-emerald-700 dark:text-emerald-300">
-                    {data.kpi.savingsRate}% rasio
+                    {data.kpi.savingsRate}% {t('ratio')}
                   </span>
                 )}
               </div>
@@ -220,7 +220,7 @@ export default function AnalyticsPage() {
             <div className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Disiplin Anggaran
+                  {t('budgetDiscipline')}
                 </span>
                 <span className="text-lg">🎯</span>
               </div>
@@ -229,7 +229,7 @@ export default function AnalyticsPage() {
               </p>
               <div className="mt-1 flex items-center gap-1.5">
                 <span className="text-xs text-slate-500 dark:text-slate-400">
-                  Bulan tanpa overbudget
+                  {t('monthsWithinBudget')}
                 </span>
               </div>
             </div>
@@ -238,7 +238,7 @@ export default function AnalyticsPage() {
             <div className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Bulan Paling Hemat
+                  {t('lowestSpendMonth')}
                 </span>
                 <span className="text-lg">🌟</span>
               </div>
@@ -256,10 +256,10 @@ export default function AnalyticsPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                  Tren Anggaran vs Realisasi Bulanan
+                  {t('budgetVsActualTrend')}
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Grafik komparasi anggaran rencana dengan pengeluaran aktual
+                  {t('budgetVsActualSub')}
                 </p>
               </div>
 
@@ -267,11 +267,11 @@ export default function AnalyticsPage() {
               <div className="flex items-center gap-4 text-xs font-semibold">
                 <div className="flex items-center gap-1.5">
                   <div className="w-3.5 h-3.5 rounded bg-indigo-200 dark:bg-indigo-900/60 border border-indigo-400 dark:border-indigo-700" />
-                  <span className="text-slate-600 dark:text-slate-300">Target Anggaran</span>
+                  <span className="text-slate-600 dark:text-slate-300">{t('budgetTargetLegend')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-3.5 h-3.5 rounded bg-indigo-600 dark:bg-indigo-500" />
-                  <span className="text-slate-600 dark:text-slate-300">Aktual Terpakai</span>
+                  <span className="text-slate-600 dark:text-slate-300">{t('actualSpentLegend')}</span>
                 </div>
               </div>
             </div>
@@ -328,19 +328,19 @@ export default function AnalyticsPage() {
                     {formatSheetMonth(activeTooltip.name)}
                   </p>
                   <p className="flex justify-between gap-4">
-                    <span className="text-slate-400 dark:text-slate-600">Anggaran:</span>
+                    <span className="text-slate-400 dark:text-slate-600">{t('budgetLabel')}:</span>
                     <span className="font-bold tabular-nums">
                       {formatRupiah(activeTooltip.budget)}
                     </span>
                   </p>
                   <p className="flex justify-between gap-4">
-                    <span className="text-slate-400 dark:text-slate-600">Aktual:</span>
+                    <span className="text-slate-400 dark:text-slate-600">{t('actualLabel')}:</span>
                     <span className="font-bold tabular-nums text-indigo-400 dark:text-indigo-600">
                       {formatRupiah(activeTooltip.aktual)}
                     </span>
                   </p>
                   <p className="flex justify-between gap-4">
-                    <span className="text-slate-400 dark:text-slate-600">Selisih:</span>
+                    <span className="text-slate-400 dark:text-slate-600">{t('differenceLabel')}:</span>
                     <span
                       className={`font-bold tabular-nums ${
                         activeTooltip.selisih >= 0 ? 'text-emerald-400 dark:text-emerald-600' : 'text-rose-400 dark:text-rose-600'
@@ -361,10 +361,10 @@ export default function AnalyticsPage() {
             <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                  🏆 10 Pos Pengeluaran Terbesar
+                  🏆 {t('top10Expenses')}
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Pos belanja yang paling banyak menyerap anggaran keluarga
+                  {t('top10ExpensesSub')}
                 </p>
               </div>
 
@@ -399,7 +399,7 @@ export default function AnalyticsPage() {
                           {exp.percentOfTotal !== undefined && (
                             <span
                               className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 tabular-nums"
-                              title={`${exp.percentOfTotal}% dari total alokasi pengeluaran`}
+                              title={`${exp.percentOfTotal}% ${language === 'id' ? 'dari total alokasi pengeluaran' : 'of total expense allocation'}`}
                             >
                               {exp.percentOfTotal}%
                             </span>
@@ -416,8 +416,8 @@ export default function AnalyticsPage() {
                           />
                         </div>
                         <span className="text-[10px] text-slate-400 tabular-nums shrink-0">
-                          Rata-rata: {formatRupiah(exp.avgMonthly)}/bln
-                          {exp.percentOfTotal !== undefined ? ` • ${exp.percentOfTotal}% alokasi` : ''}
+                          {language === 'id' ? 'Rata-rata' : 'Average'}: {formatRupiah(exp.avgMonthly)}{t('perMonth')}
+                          {exp.percentOfTotal !== undefined ? ` • ${exp.percentOfTotal}% ${t('allocation')}` : ''}
                         </span>
                       </div>
                     </div>
@@ -427,13 +427,14 @@ export default function AnalyticsPage() {
             </section>
 
             {/* Account Distribution */}
+            {/* Account Distribution */}
             <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                  💳 Porsi Beban per Rekening
+                  💳 {t('accountShareTitle')}
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Pembagian persentase dana pengeluaran berdasarkan dompet / rekening
+                  {t('accountShareSub')}
                 </p>
               </div>
 
@@ -452,7 +453,7 @@ export default function AnalyticsPage() {
                           <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white tabular-nums">
                             {formatRupiah(pos.totalAktual || pos.totalBudget)}
                           </span>
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 tabular-nums" title={`${pos.percentage.toFixed(1)}% dari total pengeluaran`}>
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 tabular-nums" title={`${pos.percentage.toFixed(1)}% ${t('ofTotalSpending')}`}>
                             {pos.percentage.toFixed(1)}%
                           </span>
                         </div>
@@ -476,10 +477,10 @@ export default function AnalyticsPage() {
           <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
             <div>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                Rekap Historis Seluruh Periode
+                {t('historicalRecapTitle')}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Data ringkasan dari semua lembar bulan yang tercatat di Google Sheets
+                {t('historicalRecapSub')}
               </p>
             </div>
 
@@ -487,67 +488,67 @@ export default function AnalyticsPage() {
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
                   <tr className="bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-200/80 dark:border-slate-700/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    <th className="py-3 px-4">Periode Bulan</th>
-                    <th className="py-3 px-4 text-right">Pendapatan</th>
-                    <th className="py-3 px-4 text-right">Target Anggaran</th>
-                    <th className="py-3 px-4 text-right">Aktual Terpakai</th>
-                    <th className="py-3 px-4 text-right">Tabungan</th>
-                    <th className="py-3 px-4 text-right">Sisa Anggaran</th>
-                    <th className="py-3 px-4 text-center">Status</th>
-                    <th className="py-3 px-4 text-center">Aksi</th>
+                    <th className="py-3 px-4">{t('colMonthPeriod')}</th>
+                    <th className="py-3 px-4 text-right">{t('combinedIncome')}</th>
+                    <th className="py-3 px-4 text-right">{t('colBudget')}</th>
+                    <th className="py-3 px-4 text-right">{t('colActual')}</th>
+                    <th className="py-3 px-4 text-right">{t('savings')}</th>
+                    <th className="py-3 px-4 text-right">{t('colDifference')}</th>
+                    <th className="py-3 px-4 text-center">{t('statusBeban')}</th>
+                    <th className="py-3 px-4 text-center">{t('colAction')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
-                  {data.monthlyTrends.map((t) => (
+                  {data.monthlyTrends.map((trend) => (
                     <tr
-                      key={t.name}
+                      key={trend.name}
                       className="hover:bg-slate-50/60 dark:hover:bg-slate-700/30 transition-colors"
                     >
                       <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
-                        {t.name}
+                        {formatSheetMonth(trend.name)}
                       </td>
                       <td className="py-3.5 px-4 text-right tabular-nums text-slate-600 dark:text-slate-300 text-xs">
-                        {t.income ? formatRupiah(t.income) : '-'}
+                        {trend.income ? formatRupiah(trend.income) : '-'}
                       </td>
                       <td className="py-3.5 px-4 text-right tabular-nums font-medium text-slate-600 dark:text-slate-300">
-                        {formatRupiah(t.budget)}
+                        {formatRupiah(trend.budget)}
                       </td>
                       <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white">
-                        {formatRupiah(t.aktual)}
+                        {formatRupiah(trend.aktual)}
                       </td>
                       <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-emerald-600 dark:text-emerald-400">
-                        {t.savings ? formatRupiah(t.savings) : '-'}
+                        {trend.savings ? formatRupiah(trend.savings) : '-'}
                       </td>
                       <td className="py-3.5 px-4 text-right tabular-nums text-xs">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full font-semibold ${
-                            t.isSurplus
+                            trend.isSurplus
                               ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800'
                               : 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800'
                           }`}
                         >
-                          {t.isSurplus ? '+' : ''}
-                          {formatRupiah(t.selisih)}
+                          {trend.isSurplus ? '+' : ''}
+                          {formatRupiah(trend.selisih)}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <span
                           className={`text-xs font-semibold ${
-                            t.isSurplus
+                            trend.isSurplus
                               ? 'text-emerald-600 dark:text-emerald-400'
                               : 'text-rose-600 dark:text-rose-400'
                           }`}
                         >
-                          {t.isSurplus ? '✓ Hemat' : '⚠️ Overbudget'}
+                          {trend.isSurplus ? t('surplusBadge') : t('deficitBadge')}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <Link
-                          href={`/bulan/${encodeURIComponent(t.name)}`}
+                          href={`/bulan/${encodeURIComponent(trend.name)}`}
                           prefetch={false}
                           className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                         >
-                          Lihat Detail →
+                          {t('viewDetails')}
                         </Link>
                       </td>
                     </tr>

@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/lib/i18n';
 
 export function GenerateModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,7 +18,7 @@ export function GenerateModal({ onClose }: { onClose: () => void }) {
     currentMonthIdx + 2 > 12 ? new Date().getFullYear() + 1 : new Date().getFullYear()
   );
 
-  const months = [
+  const monthsId = [
     'Januari',
     'Februari',
     'Maret',
@@ -30,6 +32,23 @@ export function GenerateModal({ onClose }: { onClose: () => void }) {
     'November',
     'Desember',
   ];
+
+  const monthsEn = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  const months = language === 'en' ? monthsEn : monthsId;
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -75,10 +94,10 @@ export function GenerateModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Generate Bulan Baru
+              {t('generateTitle')}
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Salin pos anggaran dari bulan sebelumnya otomatis
+              {t('generateDesc')}
             </p>
           </div>
         </div>
@@ -93,7 +112,7 @@ export function GenerateModal({ onClose }: { onClose: () => void }) {
         <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-700/70 rounded-2xl p-4 space-y-3 mb-6">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              Pilih Periode Target
+              {t('selectTargetPeriod')}
             </label>
             <div className="grid grid-cols-3 gap-2">
               <select
@@ -127,13 +146,13 @@ export function GenerateModal({ onClose }: { onClose: () => void }) {
 
           <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
             <p className="flex items-center gap-1.5">
-              <span className="text-emerald-500">✓</span> Menghasilkan tab baru di Google Sheets
+              <span className="text-emerald-500">✓</span> {t('generateFeature1')}
             </p>
             <p className="flex items-center gap-1.5">
-              <span className="text-emerald-500">✓</span> Nilai Aktual dikosongkan & checklist direset
+              <span className="text-emerald-500">✓</span> {t('generateFeature2')}
             </p>
             <p className="flex items-center gap-1.5">
-              <span className="text-emerald-500">✓</span> Formula Selisih & Rekening otomatis terpasang
+              <span className="text-emerald-500">✓</span> {t('generateFeature3')}
             </p>
           </div>
         </div>
@@ -144,7 +163,7 @@ export function GenerateModal({ onClose }: { onClose: () => void }) {
             className="px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-semibold text-xs"
             disabled={loading}
           >
-            Batal
+            {t('cancel')}
           </button>
           <button
             onClick={handleGenerate}
@@ -154,12 +173,12 @@ export function GenerateModal({ onClose }: { onClose: () => void }) {
             {loading ? (
               <>
                 <span className="animate-spin text-sm">🔄</span>
-                <span>Membuat Lembar...</span>
+                <span>{t('generating')}</span>
               </>
             ) : (
               <>
                 <span>✨</span>
-                <span>Generate Sekarang</span>
+                <span>{t('processGenerate')}</span>
               </>
             )}
           </button>
