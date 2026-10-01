@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { ExpenseItem } from '@/lib/types';
 import { formatRupiah } from '@/lib/format';
 import { EditItemModal } from '@/components/EditItemModal';
+import { useLanguage } from '@/lib/i18n';
 
 interface ExpenseTableProps {
   items: ExpenseItem[];
@@ -18,6 +19,7 @@ export function ExpenseTable({
   onUpdate,
   onOpenAddModal,
 }: ExpenseTableProps) {
+  const { t, language } = useLanguage();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -216,7 +218,7 @@ export function ExpenseTable({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama pengeluaran, rekening..."
+            placeholder={t('searchExpensePlaceholder')}
             className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
           />
           {searchQuery && (
@@ -237,7 +239,9 @@ export function ExpenseTable({
             onChange={(e) => setSelectedPosisi(e.target.value)}
             className="text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer"
           >
-            <option value="ALL">Semua Rekening ({items.length})</option>
+            <option value="ALL">
+              {language === 'id' ? `Semua Rekening (${items.length})` : `All Accounts (${items.length})`}
+            </option>
             {positions.map((pos) => (
               <option key={pos} value={pos}>
                 {pos}
@@ -255,7 +259,7 @@ export function ExpenseTable({
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
               }`}
             >
-              Semua
+              {t('filterAll')}
             </button>
             <button
               onClick={() => setFilterChecklist('UNCHECKED')}
@@ -265,7 +269,7 @@ export function ExpenseTable({
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
               }`}
             >
-              Belum
+              {t('filterUnpaid')}
             </button>
             <button
               onClick={() => setFilterChecklist('CHECKED')}
@@ -275,7 +279,7 @@ export function ExpenseTable({
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
               }`}
             >
-              Selesai
+              {t('filterPaid')}
             </button>
           </div>
 
@@ -286,7 +290,7 @@ export function ExpenseTable({
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
             >
               <span>➕</span>
-              <span>Tambah Item</span>
+              <span>{t('addExpense')}</span>
             </button>
           )}
         </div>
@@ -297,10 +301,10 @@ export function ExpenseTable({
         {filteredItems.length === 0 ? (
           <div className="py-10 px-4 text-center rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500">
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-              Tidak ada pengeluaran yang cocok
+              {t('noExpenseFound')}
             </p>
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-              Sesuaikan filter atau kata kunci pencarian
+              {t('noExpenseFoundDesc')}
             </p>
           </div>
         ) : (
@@ -385,14 +389,14 @@ export function ExpenseTable({
                   {/* Anggaran */}
                   <div>
                     <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 block">
-                      Anggaran
+                      {t('budgetLabel')}
                     </span>
                     <span className="font-semibold text-slate-700 dark:text-slate-200 tabular-nums">
                       {formatRupiah(item.budget)}
                     </span>
                     {totalMonthBudget > 0 && item.budget > 0 && (
                       <span className="text-[9px] text-slate-400 dark:text-slate-500 block">
-                        {((item.budget / totalMonthBudget) * 100).toFixed(1)}% bulan ini
+                        {((item.budget / totalMonthBudget) * 100).toFixed(1)}% {language === 'id' ? 'bulan ini' : 'this month'}
                       </span>
                     )}
                   </div>
@@ -400,7 +404,7 @@ export function ExpenseTable({
                   {/* Aktual (Inline or tap to edit) */}
                   <div>
                     <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 block">
-                      Aktual
+                      {t('actualLabel')}
                     </span>
                     {isBeingEdited ? (
                       <input
@@ -422,7 +426,7 @@ export function ExpenseTable({
                         <span>
                           {item.aktual !== null && item.aktual !== undefined
                             ? formatRupiah(item.aktual)
-                            : 'Isi aktual'}
+                            : t('fillActual')}
                         </span>
                         <span className="text-[10px] text-slate-300 dark:text-slate-600">✎</span>
                       </div>
@@ -432,7 +436,7 @@ export function ExpenseTable({
                   {/* Selisih */}
                   <div className="text-right">
                     <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 block">
-                      Selisih
+                      {t('differenceLabel')}
                     </span>
                     <span
                       className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold tabular-nums ${
@@ -454,7 +458,7 @@ export function ExpenseTable({
 
         {/* Mobile footer summary count */}
         <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-1">
-          Menampilkan {filteredItems.length} dari {items.length} pengeluaran
+          {t('showingExpenses', { count: filteredItems.length, total: items.length })}
         </div>
       </div>
 
@@ -464,19 +468,19 @@ export function ExpenseTable({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-200/80 dark:border-slate-700/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                <th className="py-3.5 px-4 w-12 text-center">No</th>
-                <th className="py-3.5 px-4">Item Pengeluaran</th>
-                <th className="py-3.5 px-4 text-right">Anggaran</th>
+                <th className="py-3.5 px-4 w-12 text-center">{t('colNo')}</th>
+                <th className="py-3.5 px-4">{t('colExpense')}</th>
+                <th className="py-3.5 px-4 text-right">{t('colBudget')}</th>
                 <th className="py-3.5 px-4 text-right">
                   <span className="inline-flex items-center gap-1">
-                    Aktual <span className="text-[10px] text-slate-400 font-normal">(klik)</span>
+                    {t('colActual')} <span className="text-[10px] text-slate-400 font-normal">({t('clickToEdit')})</span>
                   </span>
                 </th>
-                <th className="py-3.5 px-4 text-right">Selisih</th>
-                <th className="py-3.5 px-4">Rekening / Posisi</th>
-                <th className="py-3.5 px-4">Catatan</th>
-                <th className="py-3.5 px-4 text-center w-16">Bayar</th>
-                <th className="py-3.5 px-4 text-center w-12">Edit</th>
+                <th className="py-3.5 px-4 text-right">{t('colDifference')}</th>
+                <th className="py-3.5 px-4">{t('colAccount')}</th>
+                <th className="py-3.5 px-4">{t('colNotes')}</th>
+                <th className="py-3.5 px-4 text-center w-16">{t('colPay')}</th>
+                <th className="py-3.5 px-4 text-center w-12">{t('colAction')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-sm">

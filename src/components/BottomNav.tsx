@@ -3,9 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useLanguage } from '@/lib/i18n';
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const isDashboard = pathname === '/';
   const isBulan = pathname.startsWith('/bulan');
   const isAnalytics = pathname === '/analytics';
@@ -32,7 +34,7 @@ export function BottomNav() {
           }`}
         >
           <span className="text-xl mb-0.5">🏠</span>
-          <span className="text-[10px] tracking-tight">Ringkasan</span>
+          <span className="text-[10px] tracking-tight">{t('navSummary')}</span>
           {isDashboard && (
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 mt-0.5" />
           )}
@@ -48,7 +50,7 @@ export function BottomNav() {
           }`}
         >
           <span className="text-xl mb-0.5">📑</span>
-          <span className="text-[10px] tracking-tight">Lembar</span>
+          <span className="text-[10px] tracking-tight">{t('navSheets')}</span>
           {isBulan && (
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 mt-0.5" />
           )}
@@ -60,13 +62,13 @@ export function BottomNav() {
             type="button"
             onClick={handleQuickAction}
             className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center text-lg font-bold shadow-md shadow-indigo-300 dark:shadow-indigo-950/60 active:scale-90 transition-transform"
-            title={isBulan ? 'Tambah Item Pengeluaran' : 'Generate Bulan Baru'}
+            title={isBulan ? t('addExpense') : t('generateNewMonth')}
             aria-label="Quick Action"
           >
             {isBulan ? '➕' : '✨'}
           </button>
           <span className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
-            {isBulan ? 'Tambah' : 'Baru'}
+            {isBulan ? '+' : '✨'}
           </span>
         </div>
 
@@ -80,7 +82,7 @@ export function BottomNav() {
           }`}
         >
           <span className="text-xl mb-0.5">📈</span>
-          <span className="text-[10px] tracking-tight">Analisis</span>
+          <span className="text-[10px] tracking-tight">{t('navAnalytics')}</span>
           {isAnalytics && (
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 mt-0.5" />
           )}

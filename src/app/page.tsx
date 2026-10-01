@@ -9,6 +9,7 @@ import { SavingsCard } from '@/components/SavingsCard';
 import { EditIncomeModal } from '@/components/EditIncomeModal';
 import { Navbar } from '@/components/Navbar';
 import { MonthlySheet } from '@/lib/types';
+import { useLanguage } from '@/lib/i18n';
 
 interface SheetInfo {
   name: string;
@@ -17,6 +18,7 @@ interface SheetInfo {
 }
 
 export default function Dashboard() {
+  const { t, formatSheetMonth, language } = useLanguage();
   const [sheets, setSheets] = useState<SheetInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -99,10 +101,10 @@ export default function Dashboard() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between px-1">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  Pilih Periode Lembar
+                  {t('selectPeriod')}
                 </span>
                 <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
-                  {sheets.length} Bulan
+                  {sheets.length} {language === 'id' ? 'Bulan' : 'Months'}
                 </span>
               </div>
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 -mx-3.5 px-3.5 sm:mx-0">
@@ -120,7 +122,7 @@ export default function Dashboard() {
                       }`}
                     >
                       <span>🗓️</span>
-                      <span>{s.name}</span>
+                      <span>{formatSheetMonth(s.name)}</span>
                     </button>
                   );
                 })}
@@ -136,16 +138,16 @@ export default function Dashboard() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-lg">
-                      Ringkasan Aktif
+                      {t('sheetOverview')}
                     </span>
                     {loadingDetail && (
                       <span className="text-xs text-slate-400 dark:text-slate-500 animate-pulse">
-                        Memuat data...
+                        {language === 'id' ? 'Memuat data...' : 'Loading data...'}
                       </span>
                     )}
                   </div>
                   <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
-                    {currentSheet.name}
+                    {formatSheetMonth(currentSheet.name)}
                   </h2>
                 </div>
 
@@ -157,7 +159,7 @@ export default function Dashboard() {
                   >
                     {sheets.map((s) => (
                       <option key={s.name} value={s.name}>
-                        {s.name}
+                        {formatSheetMonth(s.name)}
                       </option>
                     ))}
                   </select>
@@ -167,7 +169,7 @@ export default function Dashboard() {
                     prefetch={false}
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
                   >
-                    <span>Buka Rincian Pos</span>
+                    <span>{language === 'id' ? 'Buka Rincian Pos' : 'Open Sheet Details'}</span>
                     <span>→</span>
                   </Link>
                 </div>
@@ -197,10 +199,12 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                        Alokasi Rekening
+                        {language === 'id' ? 'Alokasi Rekening' : 'Account Allocation'}
                       </h3>
                       <p className="text-xs text-slate-400 dark:text-slate-500">
-                        Distribusi anggaran dan realisasi per pos rekening
+                        {language === 'id'
+                          ? 'Distribusi anggaran dan realisasi per pos rekening'
+                          : 'Budget distribution and actuals by account position'}
                       </p>
                     </div>
                   </div>
@@ -214,10 +218,12 @@ export default function Dashboard() {
           <section className="space-y-4">
             <div>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                Arsip Lembar Anggaran
+                {t('allMonths')}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Total {sheets.length} periode tercatat di Google Sheets
+                {language === 'id'
+                  ? `Total ${sheets.length} periode tercatat di Google Sheets`
+                  : `Total of ${sheets.length} periods recorded in Google Sheets`}
               </p>
             </div>
 
@@ -243,9 +249,11 @@ export default function Dashboard() {
                     </div>
 
                     <h3 className="font-bold text-lg text-slate-900 dark:text-white tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                      {sheet.name}
+                      {formatSheetMonth(sheet.name)}
                     </h3>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Periode ke-{sheet.month}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                      {language === 'id' ? `Periode ke-${sheet.month}` : `Period ${sheet.month}`}
+                    </p>
 
                     <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
                       <button
@@ -256,7 +264,13 @@ export default function Dashboard() {
                             : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
                         }`}
                       >
-                        {isSelected ? '✓ Terpilih' : 'Lihat Ringkasan'}
+                        {isSelected
+                          ? language === 'id'
+                            ? '✓ Terpilih'
+                            : '✓ Selected'
+                          : language === 'id'
+                          ? 'Lihat Ringkasan'
+                          : 'View Summary'}
                       </button>
 
                       <Link
@@ -264,7 +278,7 @@ export default function Dashboard() {
                         prefetch={false}
                         className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
                       >
-                        Buka Lembar <span>→</span>
+                        {language === 'id' ? 'Buka Lembar' : 'Open Sheet'} <span>→</span>
                       </Link>
                     </div>
                   </div>

@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageToggle } from '@/components/LanguageToggle';
+import { useLanguage } from '@/lib/i18n';
 
 interface NavbarProps {
   onOpenGenerateModal?: () => void;
@@ -11,6 +13,7 @@ interface NavbarProps {
 
 export function Navbar({ onOpenGenerateModal }: NavbarProps) {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const isAnalytics = pathname === '/analytics';
   const isDashboard = pathname === '/' || pathname.startsWith('/bulan');
 
@@ -26,15 +29,15 @@ export function Navbar({ onOpenGenerateModal }: NavbarProps) {
             <div>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="text-base sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                  APBK Finansial
+                  {t('appTitle')}
                 </span>
                 <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />
-                  Live Sync
+                  {t('liveSync')}
                 </span>
               </div>
               <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
-                Pencatatan & Analisis Keuangan Keluarga
+                {t('appSubtitle')}
               </p>
             </div>
           </Link>
@@ -51,7 +54,7 @@ export function Navbar({ onOpenGenerateModal }: NavbarProps) {
               }`}
             >
               <span>📑</span>
-              <span>Anggaran Bulanan</span>
+              <span>{t('monthlyBudget')}</span>
             </Link>
             <Link
               href="/analytics"
@@ -63,13 +66,14 @@ export function Navbar({ onOpenGenerateModal }: NavbarProps) {
               }`}
             >
               <span>📈</span>
-              <span>Analisis Tren</span>
+              <span>{t('trendAnalytics')}</span>
             </Link>
           </nav>
         </div>
 
-        {/* Action Buttons & Theme */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
+        {/* Action Buttons, Language & Theme */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
+          <LanguageToggle />
           <ThemeToggle />
 
           {onOpenGenerateModal && (
@@ -78,7 +82,7 @@ export function Navbar({ onOpenGenerateModal }: NavbarProps) {
               className="hidden sm:inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs text-white bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
             >
               <span>✨</span>
-              <span>Generate Bulan Baru</span>
+              <span>{t('generateNewMonth')}</span>
             </button>
           )}
         </div>

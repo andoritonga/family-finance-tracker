@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { formatRupiah } from '@/lib/format';
+import { useLanguage } from '@/lib/i18n';
 
 interface MonthlyTrend {
   name: string;
@@ -61,6 +62,7 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
+  const { t, formatSheetMonth, language } = useLanguage();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'ALL' | 'LAST_6' | 'LAST_3'>('ALL');
@@ -109,10 +111,10 @@ export default function AnalyticsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Analisis Finansial Keluarga
+            {t('analyticsTitle')}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Wawasan tren belanja, efisiensi anggaran, dan kebiasaan finansial keluarga
+            {t('analyticsSubtitle')}
           </p>
         </div>
 
@@ -126,7 +128,9 @@ export default function AnalyticsPage() {
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            Semua ({data?.monthlyTrends.length || 0} Bulan)
+            {language === 'id'
+              ? `Semua (${data?.monthlyTrends.length || 0} Bulan)`
+              : `All (${data?.monthlyTrends.length || 0} Months)`}
           </button>
           <button
             onClick={() => setTimeRange('LAST_6')}
@@ -136,7 +140,7 @@ export default function AnalyticsPage() {
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            6 Bulan Terakhir
+            {language === 'id' ? '6 Bulan Terakhir' : 'Last 6 Months'}
           </button>
           <button
             onClick={() => setTimeRange('LAST_3')}
@@ -146,7 +150,7 @@ export default function AnalyticsPage() {
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            3 Bulan Terakhir
+            {language === 'id' ? '3 Bulan Terakhir' : 'Last 3 Months'}
           </button>
         </div>
       </div>
@@ -239,7 +243,7 @@ export default function AnalyticsPage() {
                 <span className="text-lg">🌟</span>
               </div>
               <p className="text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate">
-                {data.kpi.lowestSpendMonth.name}
+                {formatSheetMonth(data.kpi.lowestSpendMonth.name)}
               </p>
               <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1 tabular-nums">
                 {formatRupiah(data.kpi.lowestSpendMonth.aktual)}
@@ -309,7 +313,7 @@ export default function AnalyticsPage() {
                       {/* X-axis Label */}
                       <div className="mt-3 text-center">
                         <span className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 truncate max-w-[64px] transition-colors">
-                          {t.name.split(' ')[0]}
+                          {formatSheetMonth(t.name).split(' ')[0]}
                         </span>
                       </div>
                     </div>
@@ -321,7 +325,7 @@ export default function AnalyticsPage() {
               {activeTooltip && (
                 <div className="absolute top-0 right-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl p-3 shadow-xl text-xs space-y-1 animate-fadeIn pointer-events-none z-10">
                   <p className="font-bold text-sm border-b border-slate-700 dark:border-slate-200 pb-1">
-                    {activeTooltip.name}
+                    {formatSheetMonth(activeTooltip.name)}
                   </p>
                   <p className="flex justify-between gap-4">
                     <span className="text-slate-400 dark:text-slate-600">Anggaran:</span>
