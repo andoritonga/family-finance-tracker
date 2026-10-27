@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetName } from '@/lib/sheet-helpers';
 import { cache } from '@/lib/cache';
+import { isDemoMode, getDemoSheetList } from '@/lib/demo-store';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    if (isDemoMode()) {
+      const demoList = await getDemoSheetList();
+      return NextResponse.json(demoList);
+    }
+
     const { searchParams } = new URL(request.url);
     const forceRefresh = searchParams.get('refresh') === 'true';
 

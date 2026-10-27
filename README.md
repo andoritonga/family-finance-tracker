@@ -1,6 +1,8 @@
 # Family Finance Tracker (APBK) 💰
 
-Aplikasi web modern dan Progressive Web App (PWA) untuk pencatatan, pemantauan, dan analisis finansial keluarga secara real-time dengan menggunakan **Google Sheets** sebagai database gratis, aman, dan tanpa biaya server database bulanan.
+Aplikasi web modern dan Progressive Web App (PWA) untuk pencatatan, pemantauan, dan analisis finansial keluarga secara real-time dengan dukungan **Cloudflare D1 (Serverless SQLite Edge)** maupun sinkronisasi dua arah dengan **Google Sheets API v4**.
+
+🌐 **Live Public Demo**: [https://finance.ritonga.ai.id](https://finance.ritonga.ai.id)
 
 ---
 

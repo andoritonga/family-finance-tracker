@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetData, parseSheetName } from '@/lib/sheet-helpers';
 import { cache } from '@/lib/cache';
+import {
+  isDemoMode,
+  getDemoMonthlySheet,
+  updateDemoIncome,
+  updateDemoExpenseItem,
+  deleteDemoExpenseItem,
+  addDemoExpenseItem,
+} from '@/lib/demo-store';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -17,6 +25,14 @@ export async function GET(
     
     if (!parsedName) {
       return NextResponse.json({ error: 'Invalid sheet name format' }, { status: 400 });
+    }
+
+    if (isDemoMode()) {
+      const demoSheet = await getDemoMonthlySheet(sheetName);
+      if (!demoSheet) {
+        return NextResponse.json({ error: 'Sheet tidak ditemukan' }, { status: 404 });
+      }
+      return NextResponse.json(demoSheet);
     }
 
     const { searchParams } = new URL(request.url);
@@ -91,6 +107,19 @@ export async function PUT(
     const { sheetName: rawSheetName } = await params;
     const sheetName = decodeURIComponent(rawSheetName);
     const body = await request.json();
+
+    if (isDemoMode()) {
+      if (body.action === 'updateIncome' || body.income !== undefined || body.incomeFormula !== undefined) {
+        await updateDemoIncome(sheetName, body);
+        return NextResponse.json({ success: true, message: 'Income and savings updated successfully' });
+      }
+      const { rowIndex } = body;
+      if (typeof rowIndex !== 'number') {
+        return NextResponse.json({ error: 'rowIndex is required and must be a number' }, { status: 400 });
+      }
+      await updateDemoExpenseItem(sheetName, body);
+      return NextResponse.json({ success: true, message: 'Updated successfully' });
+    }
     
     // Check if this is an Income & Savings update
     if (body.action === 'updateIncome' || body.income !== undefined || body.incomeFormula !== undefined) {
@@ -129,8 +158,8 @@ export async function PUT(
         cleanExpr = String(body.income);
       }
 
-      const targetAccount = body.targetAccount || savingsInfo?.targetAccount || 'Blu Saving Fani';
-      const keterangan = body.keterangan || savingsInfo?.keterangan || 'Pocket Harta';
+      const targetAccount = body.targetAccount || savingsInfo?.targetAccount || 'Blu BCA Saving';
+      const keterangan = body.keterangan || savingsInfo?.keterangan || 'Pocket Tabungan & Investasi';
 
       let nabungRowNumber = (savingsInfo?.savingsRowIndex !== undefined) ? savingsInfo.savingsRowIndex + 1 : 0;
 
@@ -276,6 +305,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'rowIndex is required' }, { status: 400 });
     }
 
+    if (isDemoMode()) {
+      const ok = await deleteDemoExpenseItem(sheetName, rowIndex);
+      if (!ok) {
+        return NextResponse.json({ error: 'Item tidak ditemukan' }, { status: 404 });
+      }
+      return NextResponse.json({ success: true, message: 'Item berhasil dihapus' });
+    }
+
     const sheets = getSheets();
     const meta = await sheets.spreadsheets.get({ spreadsheetId: getSpreadsheetId() });
     const targetSheet = meta.data.sheets?.find((s) => s.properties?.title === sheetName);
@@ -331,6 +368,18 @@ export async function POST(
     
     if (!pengeluaran || typeof pengeluaran !== 'string' || !pengeluaran.trim()) {
       return NextResponse.json({ error: 'Nama pengeluaran wajib diisi' }, { status: 400 });
+    }
+
+    if (isDemoMode()) {
+      const item = await addDemoExpenseItem(sheetName, { pengeluaran, budget, posisi, keterangan });
+      if (!item) {
+        return NextResponse.json({ error: 'Sheet tidak ditemukan' }, { status: 404 });
+      }
+      return NextResponse.json({
+        success: true,
+        message: 'Item pengeluaran berhasil ditambahkan',
+        item,
+      });
     }
 
     const sheets = getSheets();

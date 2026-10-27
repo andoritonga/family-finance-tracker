@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetData, parseSheetName } from '@/lib/sheet-helpers';
 import { cache } from '@/lib/cache';
+import { isDemoMode, getDemoAnalytics } from '@/lib/demo-store';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   try {
+    if (isDemoMode()) {
+      const demoAnalytics = await getDemoAnalytics();
+      return NextResponse.json(demoAnalytics);
+    }
+
     const { searchParams } = new URL(request.url);
     const forceRefresh = searchParams.get('refresh') === 'true';
     const cacheKey = 'analytics';
@@ -122,13 +128,8 @@ export async function GET(request: NextRequest) {
         mAktual += item.aktual || 0;
         mSelisih += item.selisih || 0;
 
-        // Group expense items by normalized name (Gabungkan Fani 1 & 2 serta Rumah M.Ritonga 1 & 2 di pos pengeluaran)
-        let normName = item.pengeluaran.trim();
-        if (/^fani\s*[12]$/i.test(normName) || /^fani$/i.test(normName)) {
-          normName = 'Fani';
-        } else if (/^rumah\s*m\.?\s*ritonga.*matondang\s*[12]?$/i.test(normName)) {
-          normName = 'Rumah M.Ritonga/br. Matondang';
-        }
+        // Group expense items by normalized name
+        const normName = item.pengeluaran.trim();
 
         if (normName) {
           if (!expenseCategoryMap.has(normName)) {

@@ -13,9 +13,30 @@ interface NavbarProps {
 
 export function Navbar({ onOpenGenerateModal }: NavbarProps) {
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const isAnalytics = pathname === '/analytics';
   const isDashboard = pathname === '/' || pathname.startsWith('/bulan');
+  const [resetting, setResetting] = React.useState(false);
+
+  const handleResetDemo = async () => {
+    if (resetting) return;
+    const msg =
+      language === 'id'
+        ? 'Reset data demo ke kondisi awal (6 bulan simulasi)?'
+        : 'Reset demo data to initial default state (6 simulated months)?';
+    if (!window.confirm(msg)) return;
+    setResetting(true);
+    try {
+      const res = await fetch('/api/demo/reset', { method: 'POST' });
+      if (res.ok) {
+        window.location.reload();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setResetting(false);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-30 -mx-3.5 px-3.5 py-3 mb-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/70 dark:border-slate-800/80 sm:relative sm:top-auto sm:mx-0 sm:px-0 sm:py-0 sm:bg-transparent sm:dark:bg-transparent sm:backdrop-blur-none sm:border-b sm:border-slate-200/80 sm:dark:border-slate-800 sm:pb-6 transition-all">
@@ -73,6 +94,29 @@ export function Navbar({ onOpenGenerateModal }: NavbarProps) {
 
         {/* Action Buttons, Language & Theme */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
+          <button
+            type="button"
+            onClick={handleResetDemo}
+            disabled={resetting}
+            title={
+              language === 'id'
+                ? 'Reset Data Demo ke Awal (Cloudflare D1 Sandbox)'
+                : 'Reset Demo Data to Default (Cloudflare D1 Sandbox)'
+            }
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/80 hover:bg-amber-100 dark:hover:bg-amber-900/60 active:scale-95 transition-all cursor-pointer"
+          >
+            <span className={resetting ? 'animate-spin' : ''}>↺</span>
+            <span className="hidden lg:inline">
+              {resetting
+                ? language === 'id'
+                  ? 'Mereset...'
+                  : 'Resetting...'
+                : language === 'id'
+                ? 'Reset Demo'
+                : 'Reset Demo'}
+            </span>
+          </button>
+
           <LanguageToggle />
           <ThemeToggle />
 

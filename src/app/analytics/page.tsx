@@ -386,11 +386,6 @@ export default function AnalyticsPage() {
                           <span className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200 truncate">
                             {exp.name}
                           </span>
-                          {exp.name.toLowerCase() === 'fani' && (
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border border-violet-200/60 dark:border-violet-800 shrink-0">
-                              Fani 1 & 2
-                            </span>
-                          )}
                         </div>
                         <div className="text-right shrink-0 flex items-center gap-2">
                           <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white tabular-nums">

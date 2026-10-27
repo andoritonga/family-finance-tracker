@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetName, getSheetName, parseSheetData } from '@/lib/sheet-helpers';
+import { isDemoMode, generateDemoSheet } from '@/lib/demo-store';
 
 export async function POST(request: NextRequest) {
   try {
-    const sheets = getSheets();
-    const spreadsheetId = getSpreadsheetId();
-    
     // Parse body if present
     let body = {};
     try {
@@ -17,6 +15,21 @@ export async function POST(request: NextRequest) {
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { sourceMonth, sourceYear, targetMonth, targetYear } = body as any;
+
+    if (isDemoMode()) {
+      const res = await generateDemoSheet({ sourceMonth, sourceYear, targetMonth, targetYear });
+      if (res.error) {
+        return NextResponse.json({ error: res.error }, { status: res.status || 400 });
+      }
+      return NextResponse.json({
+        success: true,
+        message: `Created sheet ${res.sheet?.name}`,
+        sheet: res.sheet,
+      });
+    }
+
+    const sheets = getSheets();
+    const spreadsheetId = getSpreadsheetId();
     
     // Get all sheets
     const response = await sheets.spreadsheets.get({
@@ -143,8 +156,8 @@ export async function POST(request: NextRequest) {
 
     // Nabung Row
     const nabungFormulaExpr = sourceSavingsInfo?.incomeFormula || '19340000';
-    const nabungTargetAccount = sourceSavingsInfo?.targetAccount || 'Blu Saving Fani';
-    const nabungKeterangan = sourceSavingsInfo?.keterangan || 'Pocket Harta';
+    const nabungTargetAccount = sourceSavingsInfo?.targetAccount || 'Blu BCA Saving';
+    const nabungKeterangan = sourceSavingsInfo?.keterangan || 'Pocket Tabungan & Investasi';
     targetValues.push([
       'Nabung',
       '',

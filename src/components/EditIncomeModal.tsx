@@ -29,16 +29,16 @@ export function EditIncomeModal({
 }: EditIncomeModalProps) {
   const { t, language, formatSheetMonth } = useLanguage();
   const [formula, setFormula] = useState('');
-  const [account, setAccount] = useState('Blu Saving Fani');
-  const [keterangan, setKeterangan] = useState('Pocket Harta');
+  const [account, setAccount] = useState('Blu BCA Saving');
+  const [keterangan, setKeterangan] = useState('Pocket Tabungan & Investasi');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setFormula(currentIncomeFormula || (currentIncome ? String(currentIncome) : '19340000'));
-      setAccount(currentAccount || 'Blu Saving Fani');
-      setKeterangan(currentKeterangan || 'Pocket Harta');
+      setFormula(currentIncomeFormula || (currentIncome ? String(currentIncome) : '24200000'));
+      setAccount(currentAccount || 'Blu BCA Saving');
+      setKeterangan(currentKeterangan || 'Pocket Tabungan & Investasi');
       setError(null);
     }
   }, [isOpen, currentIncomeFormula, currentIncome, currentAccount, currentKeterangan]);
@@ -195,7 +195,7 @@ export function EditIncomeModal({
                 type="text"
                 value={account}
                 onChange={(e) => setAccount(e.target.value)}
-                placeholder="Contoh: Blu Saving Fani"
+                placeholder="Contoh: Blu BCA Saving"
                 className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               />
             </div>

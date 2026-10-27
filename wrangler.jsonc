@@ -10,5 +10,21 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "apbk-demo-db",
+      "database_id": "bae9e398-2382-4578-ac49-7d899f3c9bc8"
+    }
+  ],
+  "vars": {
+    "DEMO_MODE": "true"
+  },
+  "routes": [
+    {
+      "pattern": "finance.ritonga.ai.id",
+      "custom_domain": true
+    }
+  ]
 }

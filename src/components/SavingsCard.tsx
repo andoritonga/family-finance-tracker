@@ -23,8 +23,8 @@ export function SavingsCard({
     ? savingsInfo.nominal
     : Math.max(0, income - totalBudget);
 
-  const targetAccount = savingsInfo?.targetAccount || 'Blu Saving Fani';
-  const keterangan = savingsInfo?.keterangan || 'Pocket Harta';
+  const targetAccount = savingsInfo?.targetAccount || 'Blu BCA Saving';
+  const keterangan = savingsInfo?.keterangan || 'Pocket Tabungan & Investasi';
   const formulaStr = savingsInfo?.incomeFormula;
 
   const expensePercent = income > 0 ? (totalBudget / income) * 100 : 0;
