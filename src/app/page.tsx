@@ -36,6 +36,13 @@ export default function Dashboard() {
     return () => window.removeEventListener('apbk:quick-action', handleQuickAction);
   }, []);
 
+  const rememberSheet = (name: string) => {
+    try {
+      localStorage.setItem('apbk:lastSheet', name);
+      window.dispatchEvent(new CustomEvent('apbk:sheet-selected'));
+    } catch {}
+  };
+
   const fetchSheets = async () => {
     try {
       const res = await fetch('/api/sheets');
@@ -45,6 +52,7 @@ export default function Dashboard() {
         if (data.length > 0) {
           const defaultMonth = data[0].name;
           setSelectedMonthName(defaultMonth);
+          rememberSheet(defaultMonth);
           fetchCurrentSheet(defaultMonth);
         } else {
           setLoading(false);
@@ -74,6 +82,7 @@ export default function Dashboard() {
 
   const handleMonthChange = (name: string) => {
     setSelectedMonthName(name);
+    rememberSheet(name);
     fetchCurrentSheet(name);
   };
 

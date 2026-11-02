@@ -30,10 +30,15 @@ Aplikasi web modern dan Progressive Web App (PWA) untuk pencatatan, pemantauan, 
   - Total alokasi tabungan dan rasio tabungan (*Savings Rate*).
   - Skor disiplin anggaran (*Budget Discipline Rate*).
   - Identifikasi bulan paling hemat vs bulan paling boros.
-- **Grafik Komparasi Tren**: Visualisasi batang perbandingan antara rencana anggaran vs realisasi aktual tiap periode.
+- **Hybrid Monthly Budget vs Actual Trend Chart**:
+  - Filter periode cerdas (**Semua**, **6 Bulan**, **3 Bulan**) dengan default otomatis **6 Bulan** pada layar mobile/PWA agar proporsional tanpa *horizontal scroll*.
+  - Mode **6 Bulan / 3 Bulan**: Grafik batang vertikal interaktif dengan fitur *Tap-to-Inspect* detail metrik di bagian atas grafik.
+  - Mode **Semua Bulan (Mobile)**: Otomatis beradaptasi menjadi daftar *Horizontal Progress Bar* per bulan yang rapi di layar sempit, sementara tampilan Desktop tetap menyajikan grafik batang vertikal penuh.
 - **10 Pos Pengeluaran Terbesar**: Peringkat pos belanja yang paling banyak menyerap anggaran.
 - **Distribusi Porsi Rekening**: Persentase beban belanja per dompet / rekening bank.
-- **Rekap Historis Seluruh Periode**: Tabel rekapitulasi performa bulan-ke-bulan dengan status otomatis (✓ *Surplus/Hemat* atau ⚠️ *Deficit/Overbudget*).
+- **Rekap Historis Seluruh Periode (Responsive Table & Mobile Cards)**:
+  - **Desktop**: Tabel komparasi lengkap seluruh periode dengan status otomatis (✓ *Surplus/Hemat* atau ⚠️ *Deficit/Overbudget*).
+  - **Mobile / PWA**: Kartu vertikal (*Historical Period Cards*) dengan *progress bar* serapan anggaran, grid 3 kolom (*Budget*, *Actual*, *Selisih*), serta ringkasan *Pendapatan* & *Tabungan* yang dapat diketuk langsung untuk membuka rincian bulan terkait.
 
 ### 💰 5. Pengelolaan Pendapatan & Alokasi Tabungan Otomatis
 - **Formula Pendapatan Fleksibel**: Mendukung input nominal gabungan langsung maupun penjumlahan rincian sumber pendapatan (misal: `11500000 + 3650000 + 4190000`).
@@ -58,10 +63,12 @@ Aplikasi web modern dan Progressive Web App (PWA) untuk pencatatan, pemantauan, 
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [Next.js 15](https://nextjs.org/) (App Router, React 19)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Database / Storage**: [Google Sheets API v4](https://developers.google.com/sheets/api) via `googleapis`
-- **PWA**: Web App Manifest, Service Worker Caching, Apple Mobile Web App Capable
+- **Framework**: [Next.js 16.4](https://nextjs.org/) (App Router, React 19) + [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Database / Storage**:
+  - **Production Mode**: [Google Sheets API v4](https://developers.google.com/sheets/api) menggunakan *lightweight native Web Crypto JWT client* (`crypto.subtle` RSASSA-PKCS1-v1_5) yang 100% kompatibel dengan Cloudflare Workers Edge Runtime tanpa dependensi berat `googleapis`.
+  - **Interactive Demo Sandbox**: **Cloudflare D1 (Serverless SQLite Edge)** dengan fitur *Auto-Seed* dan *1-Click Reset Demo Data*.
+- **PWA**: Web App Manifest, Service Worker Caching, GPU-stabilized Bottom Navigation Dock
 - **Type Safety**: TypeScript 5
 
 ---

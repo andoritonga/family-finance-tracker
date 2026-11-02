@@ -78,6 +78,7 @@ export function EditItemModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           rowIndex,
+          sheetRow: item.sheetRow,
           pengeluaran: pengeluaran.trim(),
           budget: budgetNum,
           aktual: aktualNum,
@@ -112,7 +113,7 @@ export function EditItemModal({
       const res = await fetch(`/api/sheets/${encodeURIComponent(sheetName)}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rowIndex }),
+        body: JSON.stringify({ rowIndex, sheetRow: item.sheetRow }),
       });
 
       const data = await res.json();

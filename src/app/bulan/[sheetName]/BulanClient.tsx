@@ -50,6 +50,12 @@ export function BulanClient({ sheetName }: BulanClientProps) {
   };
 
   useEffect(() => {
+    if (sheetName) {
+      try {
+        localStorage.setItem('apbk:lastSheet', sheetName);
+        window.dispatchEvent(new CustomEvent('apbk:sheet-selected'));
+      } catch {}
+    }
     fetchSheet();
     const handleQuickAction = () => {
       setShowAddModal(true);
@@ -59,6 +65,10 @@ export function BulanClient({ sheetName }: BulanClientProps) {
   }, [sheetName]);
 
   const calculatePosisi = (data: MonthlySheet) => {
+    if (data.positionSummaries && data.positionSummaries.length > 0) {
+      setPosisiSummary(data.positionSummaries);
+      return;
+    }
     const summaryMap = new Map<string, PositionSummary>();
 
     data.items.forEach((item) => {
@@ -187,16 +197,6 @@ export function BulanClient({ sheetName }: BulanClientProps) {
           </div>
         </div>
       </div>
-
-      {/* Mobile Floating Action Button (FAB) */}
-      <button
-        type="button"
-        onClick={() => setShowAddModal(true)}
-        className="md:hidden fixed bottom-20 right-4 z-30 w-13 h-13 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-400/40 dark:shadow-none active:scale-90 transition-transform"
-        aria-label={t('addExpense')}
-      >
-        ➕
-      </button>
 
       {/* Summary Cards */}
       <SummaryCards

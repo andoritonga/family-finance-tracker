@@ -43,20 +43,21 @@ export function ManagePositionsModal({
     setError(null);
 
     try {
-      // Update each item having this position
-      const updatePromises = affectedItems.map((item) => {
-        const rowIndex = items.findIndex((i) => i.no === item.no);
-        return fetch(`/api/sheets/${encodeURIComponent(sheetName)}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            rowIndex,
-            posisi: newPosName.trim(),
-          }),
-        });
+      const res = await fetch(`/api/sheets/${encodeURIComponent(sheetName)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'bulkRenamePosition',
+          oldPosisi: selectedOldPos,
+          newPosisi: newPosName.trim(),
+        }),
       });
 
-      await Promise.all(updatePromises);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || data.details || 'Gagal mengubah rekening.');
+      }
+
       onSuccess();
       onClose();
     } catch (err: any) {

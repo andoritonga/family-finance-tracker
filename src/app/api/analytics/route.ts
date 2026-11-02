@@ -62,14 +62,23 @@ export async function GET(request: NextRequest) {
     // Sort chronologically (earliest to latest: Jan -> Dec)
     validMonthlySheets.sort((a, b) => a.year * 12 + a.month - (b.year * 12 + b.month));
 
-    // 2. Fetch all monthly sheets in a single batch request
+    // 2. Fetch all monthly sheets (formatted values & formulas) in parallel batch requests
     const batchRanges = validMonthlySheets.map((s) => `'${s.name}'!A:H`);
-    const batchRes = await sheets.spreadsheets.values.batchGet({
-      spreadsheetId,
-      ranges: batchRanges,
-    });
+    const [batchRes, batchFormulaRes] = await Promise.all([
+      sheets.spreadsheets.values.batchGet({
+        spreadsheetId,
+        ranges: batchRanges,
+        valueRenderOption: 'FORMATTED_VALUE',
+      }),
+      sheets.spreadsheets.values.batchGet({
+        spreadsheetId,
+        ranges: batchRanges,
+        valueRenderOption: 'FORMULA',
+      }),
+    ]);
 
     const valueRanges = batchRes.data.valueRanges || [];
+    const formulaValueRanges = batchFormulaRes.data.valueRanges || [];
 
     // Data structures for aggregation
     const monthlyTrends: {
@@ -116,8 +125,9 @@ export async function GET(request: NextRequest) {
 
     // Process each month's data
     validMonthlySheets.forEach((sheetInfo, idx) => {
-      const rows = valueRanges[idx]?.values || [];
-      const { items, savingsInfo } = parseSheetData(rows);
+      const rows = (valueRanges[idx]?.values || []) as string[][];
+      const formulaRows = (formulaValueRanges[idx]?.values || []) as (string | number)[][];
+      const { items, savingsInfo } = parseSheetData(rows, formulaRows);
 
       let mBudget = 0;
       let mAktual = 0;

@@ -97,9 +97,11 @@ export function ExpenseTable({
       targetChecklist = item.checklist;
     }
 
+    const itemKey = item.sheetRow ?? item.no;
+
     setLocalItems((prev) =>
       prev.map((i) =>
-        i.no === item.no
+        (i.sheetRow ?? i.no) === itemKey
           ? {
               ...i,
               aktual: targetAktual,
@@ -110,12 +112,15 @@ export function ExpenseTable({
       )
     );
 
-    setUpdatingId(item.no);
+    setUpdatingId(itemKey);
     setEditingId(null);
 
     try {
-      const rowIndex = items.findIndex((i) => i.no === item.no);
-      const payload: Record<string, any> = { rowIndex };
+      const rowIndex = items.findIndex((i) => (i.sheetRow ?? i.no) === itemKey);
+      const payload: Record<string, any> = {
+        rowIndex,
+        sheetRow: item.sheetRow,
+      };
       if (newAktual !== undefined) {
         payload.aktual = newAktual;
       }
@@ -145,7 +150,7 @@ export function ExpenseTable({
   };
 
   const handleAktualClick = (item: ExpenseItem) => {
-    setEditingId(item.no);
+    setEditingId(item.sheetRow ?? item.no);
     setEditValue(item.aktual !== null && item.aktual !== undefined ? item.aktual.toString() : '');
   };
 
@@ -181,7 +186,8 @@ export function ExpenseTable({
   };
 
   const openEditModal = (item: ExpenseItem) => {
-    const rowIndex = items.findIndex((i) => i.no === item.no);
+    const itemKey = item.sheetRow ?? item.no;
+    const rowIndex = items.findIndex((i) => (i.sheetRow ?? i.no) === itemKey);
     setActiveEditItem({ item, rowIndex });
   };
 
@@ -309,15 +315,16 @@ export function ExpenseTable({
           </div>
         ) : (
           filteredItems.map((item) => {
+            const itemKey = item.sheetRow ?? item.no;
             const isChecked = item.checklist;
-            const isBeingEdited = editingId === item.no;
-            const isBeingUpdated = updatingId === item.no;
+            const isBeingEdited = editingId === itemKey;
+            const isBeingUpdated = updatingId === itemKey;
             const selisih = item.selisih || 0;
             const isOverBudget = selisih < 0;
 
             return (
               <div
-                key={item.no}
+                key={itemKey}
                 className={`p-3.5 sm:p-4 rounded-2xl border transition-all ${
                   isChecked
                     ? 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/70 dark:border-slate-800/80'
@@ -495,15 +502,16 @@ export function ExpenseTable({
                 </tr>
               ) : (
                 filteredItems.map((item) => {
+                  const itemKey = item.sheetRow ?? item.no;
                   const isChecked = item.checklist;
-                  const isBeingEdited = editingId === item.no;
-                  const isBeingUpdated = updatingId === item.no;
+                  const isBeingEdited = editingId === itemKey;
+                  const isBeingUpdated = updatingId === itemKey;
                   const selisih = item.selisih || 0;
                   const isOverBudget = selisih < 0;
 
                   return (
                     <tr
-                      key={item.no}
+                      key={itemKey}
                       className={`group transition-colors ${
                         isChecked
                           ? 'bg-slate-50/60 dark:bg-slate-900/30 hover:bg-slate-50 dark:hover:bg-slate-900/50'

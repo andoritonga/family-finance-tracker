@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetName, getSheetName, parseSheetData } from '@/lib/sheet-helpers';
+import { cache } from '@/lib/cache';
 import { isDemoMode, generateDemoSheet } from '@/lib/demo-store';
 
 export async function POST(request: NextRequest) {
@@ -209,6 +210,9 @@ export async function POST(request: NextRequest) {
         values: targetValues
       }
     });
+
+    cache.delete('sheetList');
+    cache.delete('analytics');
     
     return NextResponse.json({ 
       success: true, 

@@ -1,5 +1,6 @@
 export interface ExpenseItem {
   no: number;
+  sheetRow?: number;
   pengeluaran: string;
   budget: number;
   aktual: number | null;

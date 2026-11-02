@@ -47,11 +47,13 @@ export async function GET(request: NextRequest) {
       return b.month - a.month;
     });
 
+    cache.set('sheetList', monthlySheets, 60);
+
     return NextResponse.json(monthlySheets);
   } catch (error: any) {
     console.error('Error fetching sheets:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch sheets', details: error.message, stack: error.stack },
+      { error: 'Failed to fetch sheets', details: error.message },
       { status: 500 }
     );
   }

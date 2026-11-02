@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/lib/i18n';
@@ -11,6 +11,21 @@ export function BottomNav() {
   const isDashboard = pathname === '/';
   const isBulan = pathname.startsWith('/bulan');
   const isAnalytics = pathname === '/analytics';
+  const [lastSheetHref, setLastSheetHref] = useState<string>('/');
+
+  useEffect(() => {
+    const updateLastSheet = () => {
+      try {
+        const saved = localStorage.getItem('apbk:lastSheet');
+        if (saved) {
+          setLastSheetHref(`/bulan/${encodeURIComponent(saved)}`);
+        }
+      } catch {}
+    };
+    updateLastSheet();
+    window.addEventListener('apbk:sheet-selected', updateLastSheet);
+    return () => window.removeEventListener('apbk:sheet-selected', updateLastSheet);
+  }, [pathname]);
 
   const handleQuickAction = () => {
     if (typeof window !== 'undefined') {
@@ -21,7 +36,12 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Mobile Navigation"
-      className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors duration-200"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors duration-200 transform-gpu will-change-transform"
+      style={{
+        transform: 'translate3d(0, 0, 0)',
+        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: 'hidden',
+      }}
     >
       <div className="max-w-md mx-auto grid grid-cols-4 items-center justify-items-center">
         {/* Tab 1: Dashboard */}
@@ -42,7 +62,7 @@ export function BottomNav() {
 
         {/* Tab 2: Bulan Page */}
         <Link
-          href={isBulan ? pathname : '/bulan/Oktober%202026'}
+          href={isBulan ? pathname : lastSheetHref}
           className={`flex flex-col items-center justify-center w-full py-1.5 rounded-2xl transition-all active:scale-95 ${
             isBulan
               ? 'text-indigo-600 dark:text-indigo-400 font-bold'

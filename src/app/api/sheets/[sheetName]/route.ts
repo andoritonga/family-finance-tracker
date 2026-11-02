@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetData, parseSheetName } from '@/lib/sheet-helpers';
+import { evaluateArithmeticExpression, parseRupiah, sanitizeSheetText } from '@/lib/format';
 import { cache } from '@/lib/cache';
 import {
   isDemoMode,
   getDemoMonthlySheet,
   updateDemoIncome,
   updateDemoExpenseItem,
+  bulkRenameDemoPosition,
   deleteDemoExpenseItem,
   addDemoExpenseItem,
 } from '@/lib/demo-store';
@@ -49,17 +51,18 @@ export async function GET(
     const sheets = getSheets();
     const spreadsheetId = getSpreadsheetId();
 
-    const fmtRes = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: `'${sheetName}'!A:H`,
-      valueRenderOption: 'FORMATTED_VALUE',
-    });
-
-    const fmlRes = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: `'${sheetName}'!A:H`,
-      valueRenderOption: 'FORMULA',
-    });
+    const [fmtRes, fmlRes] = await Promise.all([
+      sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `'${sheetName}'!A:H`,
+        valueRenderOption: 'FORMATTED_VALUE',
+      }),
+      sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `'${sheetName}'!A:H`,
+        valueRenderOption: 'FORMULA',
+      }),
+    ]);
 
     const rows = fmtRes.data.values || [];
     const formulaRows = fmlRes.data.values || [];
@@ -93,7 +96,7 @@ export async function GET(
   } catch (error: any) {
     console.error(`Error fetching sheet:`, error);
     return NextResponse.json(
-      { error: 'Failed to fetch sheet data', details: error.message, stack: error.stack },
+      { error: 'Failed to fetch sheet data', details: error.message },
       { status: 500 }
     );
   }
@@ -109,6 +112,18 @@ export async function PUT(
     const body = await request.json();
 
     if (isDemoMode()) {
+      if (body.action === 'bulkRenamePosition') {
+        const { oldPosisi, newPosisi } = body;
+        if (!oldPosisi || !newPosisi || typeof newPosisi !== 'string' || !newPosisi.trim()) {
+          return NextResponse.json({ error: 'Nama rekening lama dan baru wajib diisi' }, { status: 400 });
+        }
+        const updatedCount = await bulkRenameDemoPosition(sheetName, oldPosisi, newPosisi);
+        return NextResponse.json({
+          success: true,
+          updatedCount,
+          message: 'Rekening berhasil diperbarui secara massal',
+        });
+      }
       if (body.action === 'updateIncome' || body.income !== undefined || body.incomeFormula !== undefined) {
         await updateDemoIncome(sheetName, body);
         return NextResponse.json({ success: true, message: 'Income and savings updated successfully' });
@@ -120,8 +135,53 @@ export async function PUT(
       await updateDemoExpenseItem(sheetName, body);
       return NextResponse.json({ success: true, message: 'Updated successfully' });
     }
+
+    // 1. Bulk Rename Account Position in a single batchUpdate call
+    if (body.action === 'bulkRenamePosition') {
+      const { oldPosisi, newPosisi } = body;
+      if (!oldPosisi || !newPosisi || typeof newPosisi !== 'string' || !newPosisi.trim()) {
+        return NextResponse.json({ error: 'Nama rekening lama dan baru wajib diisi' }, { status: 400 });
+      }
+
+      const sheets = getSheets();
+      const spreadsheetId = getSpreadsheetId();
+      const fmtRes = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `'${sheetName}'!A:H`,
+        valueRenderOption: 'FORMATTED_VALUE',
+      });
+
+      const rows = fmtRes.data.values || [];
+      const { items } = parseSheetData(rows);
+      const sanitizedNewPos = sanitizeSheetText(newPosisi);
+
+      const batchData = items
+        .filter(item => item.posisi === oldPosisi && item.sheetRow)
+        .map(item => ({
+          range: `'${sheetName}'!G${item.sheetRow}`,
+          values: [[sanitizedNewPos]],
+        }));
+
+      if (batchData.length > 0) {
+        await sheets.spreadsheets.values.batchUpdate({
+          spreadsheetId,
+          requestBody: {
+            valueInputOption: 'USER_ENTERED',
+            data: batchData,
+          },
+        });
+        cache.delete(`sheet:${sheetName}`);
+        cache.delete('analytics');
+      }
+
+      return NextResponse.json({
+        success: true,
+        updatedCount: batchData.length,
+        message: 'Rekening berhasil diperbarui secara massal',
+      });
+    }
     
-    // Check if this is an Income & Savings update
+    // 2. Check if this is an Income & Savings update
     if (body.action === 'updateIncome' || body.income !== undefined || body.incomeFormula !== undefined) {
       const sheets = getSheets();
       const [fmtRes, fmlRes] = await Promise.all([
@@ -153,79 +213,72 @@ export async function PUT(
 
       let cleanExpr = '';
       if (body.incomeFormula && typeof body.incomeFormula === 'string') {
-        cleanExpr = body.incomeFormula.replace(/^=/, '').trim();
-      } else if (body.income !== undefined) {
-        cleanExpr = String(body.income);
+        const candidate = body.incomeFormula.replace(/^=/, '').replace(/[^0-9+\-*/().\s]/g, '').trim();
+        if (evaluateArithmeticExpression(candidate) !== null) {
+          cleanExpr = candidate;
+        }
+      }
+      if (!cleanExpr && body.income !== undefined) {
+        const numIncome = parseRupiah(body.income);
+        cleanExpr = String(Math.max(0, numIncome));
+      }
+      if (!cleanExpr) {
+        return NextResponse.json({ error: 'Formula atau nominal pendapatan tidak valid' }, { status: 400 });
       }
 
-      const targetAccount = body.targetAccount || savingsInfo?.targetAccount || 'Blu BCA Saving';
-      const keterangan = body.keterangan || savingsInfo?.keterangan || 'Pocket Tabungan & Investasi';
+      const targetAccount = sanitizeSheetText(body.targetAccount || savingsInfo?.targetAccount || 'Blu BCA Saving');
+      const keterangan = sanitizeSheetText(body.keterangan || savingsInfo?.keterangan || 'Pocket Tabungan & Investasi');
 
-      let nabungRowNumber = (savingsInfo?.savingsRowIndex !== undefined) ? savingsInfo.savingsRowIndex + 1 : 0;
+      const nabungRowNumber = (savingsInfo?.savingsRowIndex !== undefined)
+        ? savingsInfo.savingsRowIndex + 1
+        : totalRowNumber + 2;
 
-      if (nabungRowNumber > 0) {
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: getSpreadsheetId(),
-          range: `'${sheetName}'!A${nabungRowNumber}:G${nabungRowNumber}`,
-          valueInputOption: 'USER_ENTERED',
-          requestBody: {
-            values: [[
-              'Nabung',
-              '',
-              `=(${cleanExpr})-C${totalRowNumber}`,
-              targetAccount,
-              '',
-              '',
-              keterangan,
-            ]],
-          },
-        });
-      } else {
-        nabungRowNumber = totalRowNumber + 2;
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: getSpreadsheetId(),
-          range: `'${sheetName}'!A${nabungRowNumber}:G${nabungRowNumber}`,
-          valueInputOption: 'USER_ENTERED',
-          requestBody: {
-            values: [[
-              'Nabung',
-              '',
-              `=(${cleanExpr})-C${totalRowNumber}`,
-              targetAccount,
-              '',
-              '',
-              keterangan,
-            ]],
-          },
-        });
-      }
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: getSpreadsheetId(),
+        range: `'${sheetName}'!A${nabungRowNumber}:G${nabungRowNumber}`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: {
+          values: [[
+            'Nabung',
+            '',
+            `=(${cleanExpr})-C${totalRowNumber}`,
+            targetAccount,
+            '',
+            '',
+            keterangan,
+          ]],
+        },
+      });
+
       cache.delete(`sheet:${sheetName}`);
       cache.delete('analytics');
       return NextResponse.json({ success: true, message: 'Income and savings updated successfully' });
     }
 
-    const { rowIndex, pengeluaran, budget, aktual, checklist, posisi, keterangan } = body;
+    const { rowIndex, sheetRow: explicitSheetRow, pengeluaran, budget, aktual, checklist, posisi, keterangan } = body;
     
-    if (typeof rowIndex !== 'number') {
-      return NextResponse.json({ error: 'rowIndex is required and must be a number' }, { status: 400 });
+    if (typeof explicitSheetRow !== 'number' && typeof rowIndex !== 'number') {
+      return NextResponse.json({ error: 'rowIndex or sheetRow is required and must be a number' }, { status: 400 });
     }
 
     const sheets = getSheets();
     
-    // In Google Sheets, rows are 1-indexed. Items start at row 2, so sheetRow = rowIndex + 2.
-    const sheetRow = rowIndex + 2;
+    // Prefer exact 1-based sheetRow when provided; fallback to rowIndex + 2
+    const sheetRow = typeof explicitSheetRow === 'number' && explicitSheetRow >= 2
+      ? explicitSheetRow
+      : rowIndex + 2;
     
     const updateData: { range: string; values: any[][] }[] = [];
 
     if (pengeluaran !== undefined) {
       updateData.push({
         range: `'${sheetName}'!B${sheetRow}`,
-        values: [[pengeluaran.trim()]],
+        values: [[sanitizeSheetText(pengeluaran)]],
       });
     }
 
     if (budget !== undefined) {
-      const numBudget = typeof budget === 'number' ? budget : parseInt(String(budget || 0).replace(/[^0-9-]/g, ''), 10) || 0;
+      const numBudget = parseRupiah(budget);
       updateData.push({
         range: `'${sheetName}'!C${sheetRow}`,
         values: [[numBudget]],
@@ -237,9 +290,10 @@ export async function PUT(
     }
 
     if (aktual !== undefined) {
+      const hasAktual = aktual !== null && aktual !== undefined && aktual !== '';
       updateData.push({
         range: `'${sheetName}'!D${sheetRow}`,
-        values: [[aktual !== null && aktual !== undefined && aktual !== '' ? aktual : '']],
+        values: [[hasAktual ? parseRupiah(aktual) : '']],
       });
       updateData.push({
         range: `'${sheetName}'!E${sheetRow}`,
@@ -247,25 +301,27 @@ export async function PUT(
       });
     }
 
-    // Selalu pertahankan formula checklist otomatis di spreadsheet agar konsisten
     if (checklist !== undefined || budget !== undefined || aktual !== undefined) {
+      const checkFormula = checklist === false
+        ? `=IF(AND(ISNUMBER(D${sheetRow}), E${sheetRow}<=0), TRUE, FALSE)`
+        : `=IF(E${sheetRow}<=0, TRUE, FALSE)`;
       updateData.push({
         range: `'${sheetName}'!F${sheetRow}`,
-        values: [[`=IF(E${sheetRow}=0, TRUE, FALSE)`]],
+        values: [[checkFormula]],
       });
     }
 
     if (posisi !== undefined) {
       updateData.push({
         range: `'${sheetName}'!G${sheetRow}`,
-        values: [[posisi.trim()]],
+        values: [[sanitizeSheetText(posisi)]],
       });
     }
 
     if (keterangan !== undefined) {
       updateData.push({
         range: `'${sheetName}'!H${sheetRow}`,
-        values: [[keterangan.trim()]],
+        values: [[sanitizeSheetText(keterangan)]],
       });
     }
 
@@ -299,10 +355,10 @@ export async function DELETE(
     const { sheetName: rawSheetName } = await params;
     const sheetName = decodeURIComponent(rawSheetName);
     const body = await request.json();
-    const { rowIndex } = body;
+    const { rowIndex, sheetRow: explicitSheetRow } = body;
 
-    if (typeof rowIndex !== 'number') {
-      return NextResponse.json({ error: 'rowIndex is required' }, { status: 400 });
+    if (typeof explicitSheetRow !== 'number' && typeof rowIndex !== 'number') {
+      return NextResponse.json({ error: 'rowIndex or sheetRow is required' }, { status: 400 });
     }
 
     if (isDemoMode()) {
@@ -314,18 +370,21 @@ export async function DELETE(
     }
 
     const sheets = getSheets();
-    const meta = await sheets.spreadsheets.get({ spreadsheetId: getSpreadsheetId() });
+    const spreadsheetId = getSpreadsheetId();
+    const meta = await sheets.spreadsheets.get({ spreadsheetId });
     const targetSheet = meta.data.sheets?.find((s) => s.properties?.title === sheetName);
     if (!targetSheet || targetSheet.properties?.sheetId === undefined) {
       return NextResponse.json({ error: 'Sheet tidak ditemukan' }, { status: 404 });
     }
     const sheetId = targetSheet.properties.sheetId;
 
-    // rowIndex is 0-based index of item. Items start at row 2 (row index 1 in 0-based dimension)
-    const deleteRowIndex0Based = rowIndex + 1;
+    // 0-based dimension index in Google Sheets
+    const deleteRowIndex0Based = typeof explicitSheetRow === 'number' && explicitSheetRow >= 2
+      ? explicitSheetRow - 1
+      : rowIndex + 1;
 
     await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: getSpreadsheetId(),
+      spreadsheetId,
       requestBody: {
         requests: [
           {
@@ -341,6 +400,31 @@ export async function DELETE(
         ],
       },
     });
+
+    // Re-number the remaining item rows (1..N) so item.no stays sequential and unique
+    const afterRes = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `'${sheetName}'!A:B`,
+      valueRenderOption: 'FORMATTED_VALUE',
+    });
+    const afterRows = afterRes.data.values || [];
+    const renumberValues: number[][] = [];
+    for (let i = 1; i < afterRows.length; i++) {
+      const col0 = (afterRows[i]?.[0] || '').trim();
+      if (/^\d+$/.test(col0)) {
+        renumberValues.push([renumberValues.length + 1]);
+      } else {
+        break;
+      }
+    }
+    if (renumberValues.length > 0) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `'${sheetName}'!A2:A${renumberValues.length + 1}`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: { values: renumberValues },
+      });
+    }
 
     cache.delete(`sheet:${sheetName}`);
     cache.delete('analytics');
@@ -383,11 +467,17 @@ export async function POST(
     }
 
     const sheets = getSheets();
+    const spreadsheetId = getSpreadsheetId();
 
-    // 1. Get sheetId for batchUpdate insertDimension
-    const meta = await sheets.spreadsheets.get({
-      spreadsheetId: getSpreadsheetId(),
-    });
+    // 1 & 2. Fetch spreadsheet metadata and current rows in parallel
+    const [meta, response] = await Promise.all([
+      sheets.spreadsheets.get({ spreadsheetId }),
+      sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `'${sheetName}'!A:H`,
+      }),
+    ]);
+
     const targetSheet = meta.data.sheets?.find(
       s => s.properties?.title === sheetName
     );
@@ -395,12 +485,6 @@ export async function POST(
       return NextResponse.json({ error: 'Sheet tidak ditemukan' }, { status: 404 });
     }
     const sheetId = targetSheet.properties.sheetId;
-
-    // 2. Fetch current rows to find where items end
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: getSpreadsheetId(),
-      range: `'${sheetName}'!A:H`,
-    });
 
     const rows = response.data.values || [];
     let lastItemRowIndex1Based = 1; // row 1 is header
@@ -421,10 +505,13 @@ export async function POST(
     const insertRowIndex0Based = lastItemRowIndex1Based;
     const newRow1Based = insertRowIndex0Based + 1;
     const nextNo = maxNo + 1;
-    const numBudget = typeof budget === 'number' ? budget : parseInt(String(budget || 0).replace(/[^0-9-]/g, ''), 10) || 0;
+    const numBudget = parseRupiah(budget);
+    const safePengeluaran = sanitizeSheetText(pengeluaran);
+    const safePosisi = posisi ? sanitizeSheetText(posisi) : '';
+    const safeKeterangan = keterangan ? sanitizeSheetText(keterangan) : '';
 
     await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: getSpreadsheetId(),
+      spreadsheetId,
       requestBody: {
         requests: [
           {
@@ -444,20 +531,20 @@ export async function POST(
 
     // 4. Populate values into the newly inserted row
     await sheets.spreadsheets.values.update({
-      spreadsheetId: getSpreadsheetId(),
+      spreadsheetId,
       range: `'${sheetName}'!A${newRow1Based}:H${newRow1Based}`,
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [
           [
             nextNo,
-            pengeluaran.trim(),
+            safePengeluaran,
             numBudget,
             '', // Aktual empty
             `=C${newRow1Based}-D${newRow1Based}`, // Selisih formula
             `=IF(E${newRow1Based}=0, TRUE, FALSE)`, // Checklist formula automatic
-            posisi ? posisi.trim() : '',
-            keterangan ? keterangan.trim() : '',
+            safePosisi,
+            safeKeterangan,
           ],
         ],
       },
@@ -471,6 +558,7 @@ export async function POST(
       message: 'Item pengeluaran berhasil ditambahkan',
       item: {
         no: nextNo,
+        sheetRow: newRow1Based,
         pengeluaran: pengeluaran.trim(),
         budget: numBudget,
         aktual: null,

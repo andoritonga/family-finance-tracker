@@ -12,8 +12,6 @@ export const viewport: Viewport = {
   ],
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: 'cover',
 };
 
@@ -44,10 +42,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="font-sans antialiased bg-[#F8FAFC] dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors duration-200">
         <LanguageProvider>
           <ServiceWorkerRegister />
-          <div className="min-h-screen">
+          <div className="min-h-screen overflow-x-clip">
             <main className="max-w-7xl mx-auto px-3.5 pt-3 pb-28 sm:px-6 sm:py-6 lg:p-8">
               {children}
             </main>

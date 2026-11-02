@@ -1,23 +1,12 @@
 import { ExpenseItem, PositionSummary, SavingsInfo } from './types';
+import { formatRupiah, parseRupiah, evaluateArithmeticExpression } from './format';
+
+export { formatRupiah, parseRupiah };
 
 const MONTH_NAMES = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
 ];
-
-export function parseRupiah(value: string): number {
-  if (!value) return 0;
-  const parsed = parseInt(value.replace(/[^0-9-]/g, ''), 10);
-  return isNaN(parsed) ? 0 : parsed;
-}
-
-export function formatRupiah(value: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(value);
-}
 
 export function getMonthName(month: number): string {
   return MONTH_NAMES[month - 1] || '';
@@ -28,7 +17,7 @@ export function getSheetName(month: number, year: number): string {
 }
 
 export function parseSheetName(name: string): { month: number; year: number } | null {
-  const parts = name.split(' ');
+  const parts = name.trim().split(/\s+/);
   if (parts.length !== 2) return null;
   
   const monthName = parts[0];
@@ -49,19 +38,13 @@ export function parseNabungFormula(formulaStr: string): { income: number; income
                 formulaStr.match(/^=\s*(.+)\s*-\s*[A-Z]+(\d+)/i);
   if (match) {
     const expr = match[1].trim();
-    if (/^[0-9+\-*/.\s]+$/.test(expr)) {
-      try {
-        const val = Function(`'use strict'; return (${expr})`)();
-        if (typeof val === 'number' && !isNaN(val)) {
-          return {
-            income: val,
-            incomeFormula: expr,
-            totalCellRow: match[2] ? parseInt(match[2], 10) : undefined
-          };
-        }
-      } catch {
-        // ignore
-      }
+    const val = evaluateArithmeticExpression(expr);
+    if (val !== null) {
+      return {
+        income: val,
+        incomeFormula: expr,
+        totalCellRow: match[2] ? parseInt(match[2], 10) : undefined
+      };
     }
   }
   return null;
@@ -112,6 +95,7 @@ export function parseSheetData(
 
         items.push({
           no: parseInt(col0, 10),
+          sheetRow: i + 1,
           pengeluaran: col1,
           budget,
           aktual,
@@ -178,6 +162,30 @@ export function parseSheetData(
       }
     }
   }
+
+  // Compute dynamic position summaries directly from items to guarantee accuracy
+  // even when new account positions are added or renamed via the app
+  if (items.length > 0) {
+    const computedMap = new Map<string, PositionSummary>();
+    for (const item of items) {
+      const pos = item.posisi || 'Lainnya';
+      if (!computedMap.has(pos)) {
+        computedMap.set(pos, { posisi: pos, budget: 0, aktual: 0, selisih: 0 });
+      }
+      const entry = computedMap.get(pos)!;
+      entry.budget += item.budget || 0;
+      entry.aktual += item.aktual || 0;
+      entry.selisih += item.selisih !== null && item.selisih !== undefined
+        ? item.selisih
+        : (item.budget - (item.aktual || 0));
+    }
+    return {
+      items,
+      positionSummaries: Array.from(computedMap.values()),
+      savingsInfo,
+    };
+  }
   
   return { items, positionSummaries, savingsInfo };
 }
+

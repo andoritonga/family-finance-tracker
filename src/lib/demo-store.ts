@@ -661,6 +661,35 @@ export async function updateDemoExpenseItem(
   return true;
 }
 
+export async function bulkRenameDemoPosition(
+  sheetName: string,
+  oldPosisi: string,
+  newPosisi: string
+): Promise<number> {
+  const db = await ensureDemoInitialized();
+  const cleanNew = newPosisi.trim();
+  if (db) {
+    const res = await db
+      .prepare(`UPDATE demo_expenses SET posisi = ? WHERE sheet_name = ? AND posisi = ?`)
+      .bind(cleanNew, sheetName, oldPosisi)
+      .run();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (res as any)?.meta?.changes || 1;
+  }
+
+  const store = getMemoryStore();
+  const sheet = store.sheets.find((s) => s.name === sheetName);
+  if (!sheet) return 0;
+  let count = 0;
+  sheet.items.forEach((item) => {
+    if (item.posisi === oldPosisi) {
+      item.posisi = cleanNew;
+      count++;
+    }
+  });
+  return count;
+}
+
 export async function addDemoExpenseItem(
   sheetName: string,
   payload: {
