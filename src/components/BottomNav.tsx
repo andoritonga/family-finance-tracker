@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { LayoutDashboard, FileSpreadsheet, Plus, TrendingUp } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n';
 
 export function BottomNav() {
@@ -49,14 +50,14 @@ export function BottomNav() {
           href="/"
           className={`flex flex-col items-center justify-center w-full py-1.5 rounded-2xl transition-all active:scale-95 ${
             isDashboard
-              ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+              ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
           }`}
         >
-          <span className="text-xl mb-0.5">🏠</span>
+          <LayoutDashboard className="w-5 h-5 mb-0.5" strokeWidth={isDashboard ? 2.1 : 1.75} />
           <span className="text-[10px] tracking-tight">{t('navSummary')}</span>
           {isDashboard && (
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 mt-0.5" />
+            <span className="w-1 h-1 rounded-full bg-indigo-600 dark:bg-indigo-400 mt-0.5" />
           )}
         </Link>
 
@@ -65,14 +66,14 @@ export function BottomNav() {
           href={isBulan ? pathname : lastSheetHref}
           className={`flex flex-col items-center justify-center w-full py-1.5 rounded-2xl transition-all active:scale-95 ${
             isBulan
-              ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+              ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
           }`}
         >
-          <span className="text-xl mb-0.5">📑</span>
+          <FileSpreadsheet className="w-5 h-5 mb-0.5" strokeWidth={isBulan ? 2.1 : 1.75} />
           <span className="text-[10px] tracking-tight">{t('navSheets')}</span>
           {isBulan && (
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 mt-0.5" />
+            <span className="w-1 h-1 rounded-full bg-indigo-600 dark:bg-indigo-400 mt-0.5" />
           )}
         </Link>
 
@@ -81,14 +82,14 @@ export function BottomNav() {
           <button
             type="button"
             onClick={handleQuickAction}
-            className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center text-lg font-bold shadow-md shadow-indigo-300 dark:shadow-indigo-950/60 active:scale-90 transition-transform"
+            className="w-10 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center active:scale-90 transition-transform"
             title={isBulan ? t('addExpense') : t('generateNewMonth')}
             aria-label="Quick Action"
           >
-            {isBulan ? '➕' : '✨'}
+            <Plus className="w-5 h-5" strokeWidth={2.25} />
           </button>
           <span className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
-            {isBulan ? '+' : '✨'}
+            {isBulan ? 'Tambah' : 'Baru'}
           </span>
         </div>
 
@@ -97,14 +98,14 @@ export function BottomNav() {
           href="/analytics"
           className={`flex flex-col items-center justify-center w-full py-1.5 rounded-2xl transition-all active:scale-95 ${
             isAnalytics
-              ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+              ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
           }`}
         >
-          <span className="text-xl mb-0.5">📈</span>
+          <TrendingUp className="w-5 h-5 mb-0.5" strokeWidth={isAnalytics ? 2.1 : 1.75} />
           <span className="text-[10px] tracking-tight">{t('navAnalytics')}</span>
           {isAnalytics && (
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 mt-0.5" />
+            <span className="w-1 h-1 rounded-full bg-indigo-600 dark:bg-indigo-400 mt-0.5" />
           )}
         </Link>
       </div>

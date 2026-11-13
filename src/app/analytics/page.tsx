@@ -6,6 +6,16 @@ import { Navbar } from '@/components/Navbar';
 import { GenerateModal } from '@/components/GenerateModal';
 import { formatRupiah } from '@/lib/format';
 import { useLanguage } from '@/lib/i18n';
+import {
+  BarChart3,
+  ArrowUpRight,
+  Landmark,
+  Target,
+  Sparkles,
+  Trophy,
+  CreditCard,
+  Calendar,
+} from 'lucide-react';
 
 interface MonthlyTrend {
   name: string;
@@ -183,9 +193,9 @@ export default function AnalyticsPage() {
           <div className="h-80 bg-slate-200 dark:bg-slate-800 rounded-3xl animate-pulse" />
         </div>
       ) : !data || !data.kpi ? (
-        <div className="text-center py-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl">
-          <span className="text-4xl">📊</span>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white mt-3">
+        <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl">
+          <BarChart3 className="w-9 h-9 text-slate-400 mx-auto" strokeWidth={1.5} />
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-white mt-3">
             Data Belum Cukup
           </h2>
           <p className="text-slate-500 text-sm mt-1">
@@ -197,33 +207,33 @@ export default function AnalyticsPage() {
           {/* Executive KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Card 1: Rata-rata Pengeluaran */}
-            <div className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {t('averageExpenses')}
                 </span>
-                <span className="text-lg">💸</span>
+                <ArrowUpRight className="w-4 h-4 text-slate-400" strokeWidth={1.75} />
               </div>
               <p className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
                 {formatRupiah(data.kpi.avgMonthlySpend)}
               </p>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 tabular-nums">
                 {t('targetBudgetLabel')}: {formatRupiah(data.kpi.avgMonthlyBudget)}
               </p>
             </div>
 
             {/* Card 2: Akumulasi Alokasi Tabungan */}
-            <div className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {t('totalSavingsAlloc')}
                 </span>
-                <span className="text-lg">🏦</span>
+                <Landmark className="w-4 h-4 text-emerald-600 dark:text-emerald-400" strokeWidth={1.75} />
               </div>
               <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">
                 {formatRupiah(data.kpi.totalAnnualSavings || 0)}
               </p>
-              <div className="mt-1 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
+              <div className="mt-1 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 tabular-nums">
                 <span>{language === 'id' ? 'Rata-rata' : 'Average'}: {formatRupiah(data.kpi.avgMonthlySavings || 0)}{t('perMonth')}</span>
                 {data.kpi.savingsRate !== undefined && (
                   <span className="font-semibold text-emerald-700 dark:text-emerald-300">
@@ -234,12 +244,12 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Card 3: Disiplin Anggaran */}
-            <div className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {t('budgetDiscipline')}
                 </span>
-                <span className="text-lg">🎯</span>
+                <Target className="w-4 h-4 text-indigo-600 dark:text-indigo-400" strokeWidth={1.75} />
               </div>
               <p className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
                 {data.kpi.disciplineRate.toFixed(0)}%
@@ -252,12 +262,12 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Card 4: Bulan Paling Efisien */}
-            <div className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {t('lowestSpendMonth')}
                 </span>
-                <span className="text-lg">🌟</span>
+                <Sparkles className="w-4 h-4 text-amber-500" strokeWidth={1.75} />
               </div>
               <p className="text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate">
                 {formatSheetMonth(data.kpi.lowestSpendMonth.name)}
@@ -269,7 +279,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Monthly Trend Chart (Option 3: Vertical Bars for 3M/6M, Horizontal Bars on Mobile when ALL is selected) */}
-          <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-5 sm:p-8 shadow-sm space-y-5 overflow-hidden">
+          <section className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 sm:p-7 space-y-5 overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -472,19 +482,20 @@ export default function AnalyticsPage() {
           </section>
 
           {/* Two Columns: Top 10 Expenses & Account Distribution */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Top 10 Expenses */}
-            <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
+            <section className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4">
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                  🏆 {t('top10Expenses')}
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-amber-500 shrink-0" strokeWidth={1.75} />
+                  <span>{t('top10Expenses')}</span>
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {t('top10ExpensesSub')}
                 </p>
               </div>
 
-              <div className="space-y-3.5">
+              <div className="space-y-3">
                 {data.topExpenses.map((exp, idx) => {
                   const maxExpenseVal = data.topExpenses[0]?.totalAktual || data.topExpenses[0]?.totalBudget || 1;
                   const percentOfTop = ((exp.totalAktual || exp.totalBudget) / maxExpenseVal) * 100;
@@ -492,7 +503,7 @@ export default function AnalyticsPage() {
                   return (
                     <div
                       key={exp.name}
-                      className="p-3 bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors"
+                      className="p-3 bg-slate-50/70 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
                     >
                       <div className="flex items-center justify-between gap-2 mb-1.5">
                         <div className="flex items-center gap-2 min-w-0 truncate">
@@ -538,30 +549,30 @@ export default function AnalyticsPage() {
             </section>
 
             {/* Account Distribution */}
-            {/* Account Distribution */}
-            <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
+            <section className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4">
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                  💳 {t('accountShareTitle')}
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" strokeWidth={1.75} />
+                  <span>{t('accountShareTitle')}</span>
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {t('accountShareSub')}
                 </p>
               </div>
 
-              <div className="space-y-3.5">
+              <div className="space-y-3">
                 {data.positionDistribution.map((pos) => {
                   return (
                     <div
                       key={pos.posisi}
-                      className="p-3.5 bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors"
+                      className="p-3.5 bg-slate-50/70 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
                     >
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-200">
+                        <span className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200">
                           {pos.posisi}
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white tabular-nums">
+                          <span className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white tabular-nums">
                             {formatRupiah(pos.totalAktual || pos.totalBudget)}
                           </span>
                           <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 tabular-nums" title={`${pos.percentage.toFixed(1)}% ${t('ofTotalSpending')}`}>
@@ -571,9 +582,9 @@ export default function AnalyticsPage() {
                       </div>
 
                       {/* Percentage Bar */}
-                      <div className="w-full bg-slate-200/70 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                      <div className="w-full bg-slate-200/70 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                         <div
-                          className="bg-gradient-to-r from-indigo-500 to-violet-500 h-full rounded-full transition-all duration-500"
+                          className="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-500"
                           style={{ width: `${Math.min(100, pos.percentage)}%` }}
                         />
                       </div>
@@ -585,7 +596,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Historical Summary Table */}
-          <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-5 sm:p-8 shadow-sm space-y-4">
+          <section className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4">
             <div>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                 {t('historicalRecapTitle')}
@@ -612,8 +623,8 @@ export default function AnalyticsPage() {
                     {/* Card Header: Month Name, Surplus/Deficit Badge & Detail Link */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-base flex-shrink-0">📅</span>
-                        <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                        <Calendar className="w-4 h-4 text-slate-400 shrink-0" strokeWidth={1.75} />
+                        <span className="font-semibold text-sm text-slate-900 dark:text-white truncate">
                           {formatSheetMonth(trend.name)}
                         </span>
                       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { ArrowLeft, RefreshCw, Plus, Settings, Search } from 'lucide-react';
 import { SummaryCards } from '@/components/SummaryCards';
 import { ExpenseTable } from '@/components/ExpenseTable';
 import { PositionSummaryTable } from '@/components/PositionSummaryTable';
@@ -112,9 +113,11 @@ export function BulanClient({ sheetName }: BulanClientProps) {
 
   if (!sheet) {
     return (
-      <div className="text-center py-20 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-8">
-        <span className="text-4xl">🔍</span>
-        <h2 className="text-xl font-bold text-slate-800 dark:text-white mt-3">
+      <div className="text-center py-20 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-8">
+        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+          <Search className="w-6 h-6" strokeWidth={1.75} />
+        </div>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mt-4">
           {language === 'id' ? 'Lembar Tidak Ditemukan' : 'Sheet Not Found'}
         </h2>
         <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
@@ -124,18 +127,19 @@ export function BulanClient({ sheetName }: BulanClientProps) {
         </p>
         <Link
           href="/"
-          className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition-colors"
+          className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold text-xs hover:bg-indigo-700 transition-colors"
         >
-          ← {t('backToDashboard')}
+          <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} />
+          <span>{t('backToDashboard')}</span>
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Breadcrumbs & Header */}
-      <div className="sticky top-0 z-30 -mx-3.5 px-3.5 py-2.5 mb-5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/70 dark:border-slate-800/80 sm:relative sm:top-auto sm:mx-0 sm:px-0 sm:py-0 sm:bg-transparent sm:dark:bg-transparent sm:backdrop-blur-none sm:border-none sm:mb-0 transition-all">
+      <div className="sticky top-0 z-30 -mx-3.5 px-3.5 py-2.5 mb-4 bg-[#F8FAFC]/85 dark:bg-[#0B0F17]/85 backdrop-blur-md border-b border-slate-200/70 dark:border-slate-800/80 sm:relative sm:top-auto sm:mx-0 sm:px-0 sm:py-0 sm:bg-transparent sm:dark:bg-transparent sm:backdrop-blur-none sm:border-none sm:mb-0 transition-all">
         <nav className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400 dark:text-slate-500 mb-2">
           <Link href="/" prefetch={false} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
             {t('navSummary')}
@@ -149,21 +153,21 @@ export function BulanClient({ sheetName }: BulanClientProps) {
             <Link
               href="/"
               prefetch={false}
-              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 active:scale-95 transition-all shadow-xs shrink-0"
+              className="w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-slate-300 active:scale-95 transition-all shrink-0"
               title={t('backToDashboard')}
             >
-              ←
+              <ArrowLeft className="w-4 h-4" strokeWidth={1.75} />
             </Link>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
+                <h1 className="text-lg sm:text-2xl font-semibold text-slate-900 dark:text-white tracking-tight truncate">
                   {formatSheetMonth(sheet.name)}
                 </h1>
-                <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 shrink-0">
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 tabular-nums shrink-0">
                   {completedCount}/{totalCount} {language === 'id' ? 'Dibayar' : 'Paid'}
                 </span>
               </div>
-              <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="hidden sm:block text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                 {language === 'id'
                   ? 'Rincian Anggaran, Realisasi, dan Alokasi Rekening'
                   : 'Budget Details, Actuals, and Account Allocation'}
@@ -178,10 +182,10 @@ export function BulanClient({ sheetName }: BulanClientProps) {
             <button
               onClick={() => fetchSheet(true)}
               disabled={isRefreshing}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 active:scale-95 transition-all shadow-xs"
+              className="w-9 h-9 sm:w-auto sm:px-3 inline-flex items-center justify-center gap-1.5 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-all"
               title={language === 'id' ? 'Sinkronkan data dengan Google Sheets' : 'Sync data with Google Sheets'}
             >
-              <span className={isRefreshing ? 'animate-spin' : ''}>🔄</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={1.75} />
               <span className="hidden sm:inline">
                 {isRefreshing ? t('syncing') : t('syncData')}
               </span>
@@ -189,9 +193,9 @@ export function BulanClient({ sheetName }: BulanClientProps) {
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="hidden sm:inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
+              className="hidden sm:inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all"
             >
-              <span>➕</span>
+              <Plus className="w-3.5 h-3.5" strokeWidth={2.2} />
               <span>{t('addExpense')}</span>
             </button>
           </div>
@@ -215,18 +219,16 @@ export function BulanClient({ sheetName }: BulanClientProps) {
       />
 
       {/* Main Expense Table Section */}
-      <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-7 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-              {language === 'id' ? 'Daftar Pos Pengeluaran' : 'Expense Items List'}
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {language === 'id'
-                ? 'Klik pada nama item, anggaran, atau tombol ✏️ untuk mengedit rincian'
-                : 'Click on item name, budget, or ✏️ to edit details'}
-            </p>
-          </div>
+      <section className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-6 space-y-4">
+        <div>
+          <h2 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight">
+            {language === 'id' ? 'Daftar Pos Pengeluaran' : 'Expense Items List'}
+          </h2>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+            {language === 'id'
+              ? 'Klik nama item, anggaran, atau ikon edit untuk mengubah rincian'
+              : 'Click item name, budget, or edit icon to update details'}
+          </p>
         </div>
 
         <ExpenseTable
@@ -238,24 +240,24 @@ export function BulanClient({ sheetName }: BulanClientProps) {
       </section>
 
       {/* Breakdown per Posisi / Rekening Section */}
-      <section className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-7 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <section className="space-y-3 pt-1">
+        <div className="flex items-center justify-between gap-2">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200 tracking-tight">
               {language === 'id' ? 'Ringkasan Alokasi per Rekening' : 'Account Allocation Summary'}
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-400 dark:text-slate-500">
               {language === 'id'
-                ? 'Otomatis dikelompokkan berdasarkan kolom rekening layaknya Pivot Table'
-                : 'Automatically grouped by account column like a Pivot Table'}
+                ? 'Dikelompokkan otomatis berdasarkan rekening'
+                : 'Automatically grouped by account'}
             </p>
           </div>
 
           <button
             onClick={() => setShowManagePosModal(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-fit"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors w-fit shrink-0"
           >
-            <span>⚙️</span>
+            <Settings className="w-3.5 h-3.5" strokeWidth={1.75} />
             <span>{t('manageAccounts')}</span>
           </button>
         </div>

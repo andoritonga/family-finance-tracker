@@ -5,6 +5,7 @@ import { ExpenseItem } from '@/lib/types';
 import { formatRupiah } from '@/lib/format';
 import { EditItemModal } from '@/components/EditItemModal';
 import { useLanguage } from '@/lib/i18n';
+import { Search, Plus, Pencil, Check, X, Lightbulb, FileText } from 'lucide-react';
 
 interface ExpenseTableProps {
   items: ExpenseItem[];
@@ -217,22 +218,23 @@ export function ExpenseTable({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-1">
         {/* Search Input */}
         <div className="relative flex-1 max-w-sm">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-            🔍
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 pointer-events-none">
+            <Search className="w-4 h-4" strokeWidth={1.75} />
           </span>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('searchExpensePlaceholder')}
-            className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
+            className="w-full pl-9 pr-8 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              aria-label="Clear search"
             >
-              ✕
+              <X className="w-3.5 h-3.5" strokeWidth={2} />
             </button>
           )}
         </div>
@@ -293,9 +295,9 @@ export function ExpenseTable({
           {onOpenAddModal && (
             <button
               onClick={onOpenAddModal}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white transition-all"
             >
-              <span>➕</span>
+              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
               <span>{t('addExpense')}</span>
             </button>
           )}
@@ -328,7 +330,7 @@ export function ExpenseTable({
                 className={`p-3.5 sm:p-4 rounded-2xl border transition-all ${
                   isChecked
                     ? 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/70 dark:border-slate-800/80'
-                    : 'bg-white dark:bg-slate-800/90 border-slate-200/90 dark:border-slate-700/90 shadow-xs'
+                    : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800'
                 }`}
               >
                 {/* Header Row: Checkbox + Title + Rekening Badge */}
@@ -341,15 +343,15 @@ export function ExpenseTable({
                       disabled={isBeingUpdated}
                       className={`w-9 h-9 flex-shrink-0 rounded-xl flex items-center justify-center transition-all active:scale-90 ${
                         isChecked
-                          ? 'bg-emerald-500 text-white shadow-xs'
-                          : 'border-2 border-slate-300 dark:border-slate-600 hover:border-indigo-500 bg-white dark:bg-slate-800'
+                          ? 'bg-emerald-500 text-white'
+                          : 'border-2 border-slate-300 dark:border-slate-700 hover:border-indigo-500 bg-white dark:bg-slate-900'
                       }`}
                       aria-label={isChecked ? 'Tandai belum bayar' : 'Tandai sudah bayar'}
                     >
                       {isBeingUpdated ? (
                         <span className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                       ) : isChecked ? (
-                        <span className="text-sm font-black">✓</span>
+                        <Check className="w-4 h-4" strokeWidth={2.5} />
                       ) : null}
                     </button>
 
@@ -364,8 +366,9 @@ export function ExpenseTable({
                         {item.pengeluaran}
                       </h4>
                       {item.keterangan && (
-                        <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                          📝 {item.keterangan}
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1 truncate mt-0.5">
+                          <FileText className="w-3 h-3 shrink-0" strokeWidth={1.75} />
+                          <span className="truncate">{item.keterangan}</span>
                         </p>
                       )}
                     </div>
@@ -374,7 +377,7 @@ export function ExpenseTable({
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     {item.posisi && (
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${getPosisiColor(
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border ${getPosisiColor(
                           item.posisi
                         )}`}
                       >
@@ -383,10 +386,10 @@ export function ExpenseTable({
                     )}
                     <button
                       onClick={() => openEditModal(item)}
-                      className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 active:scale-90 transition-all"
+                      className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90 transition-all"
                       title="Edit Item"
                     >
-                      ✏️
+                      <Pencil className="w-3.5 h-3.5" strokeWidth={1.75} />
                     </button>
                   </div>
                 </div>
@@ -428,14 +431,14 @@ export function ExpenseTable({
                     ) : (
                       <div
                         onClick={() => handleAktualClick(item)}
-                        className="cursor-pointer inline-flex items-center gap-1 font-bold text-slate-900 dark:text-white tabular-nums hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="cursor-pointer inline-flex items-center gap-1 font-semibold text-slate-900 dark:text-white tabular-nums hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                       >
                         <span>
                           {item.aktual !== null && item.aktual !== undefined
                             ? formatRupiah(item.aktual)
                             : t('fillActual')}
                         </span>
-                        <span className="text-[10px] text-slate-300 dark:text-slate-600">✎</span>
+                        <Pencil className="w-2.5 h-2.5 text-slate-300 dark:text-slate-600" strokeWidth={1.75} />
                       </div>
                     )}
                   </div>
@@ -470,7 +473,7 @@ export function ExpenseTable({
       </div>
 
       {/* Desktop Table View (Hidden on mobile, spacious on wide screens) */}
-      <div className="hidden md:block overflow-hidden border border-slate-200/80 dark:border-slate-700/80 rounded-2xl bg-white dark:bg-slate-800 shadow-sm">
+      <div className="hidden md:block overflow-hidden border border-slate-200/80 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -586,9 +589,7 @@ export function ExpenseTable({
                                 ? formatRupiah(item.aktual)
                                 : t('notSet')}
                             </span>
-                            <span className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 text-xs transition-colors">
-                              ✎
-                            </span>
+                            <Pencil className="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" strokeWidth={1.75} />
                           </div>
                         )}
                       </td>
@@ -655,10 +656,10 @@ export function ExpenseTable({
                       <td className="py-3.5 px-4 text-center">
                         <button
                           onClick={() => openEditModal(item)}
-                          className="w-8 h-8 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700 dark:hover:text-indigo-400 flex items-center justify-center transition-colors text-sm"
+                          className="w-8 h-8 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800 dark:hover:text-indigo-400 inline-flex items-center justify-center transition-colors"
                           title={t('colAction')}
                         >
-                          ✏️
+                          <Pencil className="w-3.5 h-3.5" strokeWidth={1.75} />
                         </button>
                       </td>
                     </tr>
@@ -670,7 +671,7 @@ export function ExpenseTable({
         </div>
 
         {/* Table Footer info */}
-        <div className="bg-slate-50/80 dark:bg-slate-900/40 px-4 py-3 border-t border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+        <div className="bg-slate-50/80 dark:bg-slate-900/60 px-4 py-3 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
           <span>
             Menampilkan{' '}
             <strong className="text-slate-700 dark:text-slate-200">
@@ -682,8 +683,9 @@ export function ExpenseTable({
             </strong>{' '}
             pengeluaran
           </span>
-          <span className="text-slate-400 dark:text-slate-500 hidden sm:inline">
-            💡 Tips: Klik teks pengeluaran atau tombol ✏️ untuk mengedit anggaran & rekening
+          <span className="text-slate-400 dark:text-slate-500 hidden sm:inline-flex items-center gap-1.5">
+            <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0" strokeWidth={1.75} />
+            <span>Tips: Klik teks pengeluaran atau tombol edit untuk mengubah anggaran & rekening</span>
           </span>
         </div>
       </div>

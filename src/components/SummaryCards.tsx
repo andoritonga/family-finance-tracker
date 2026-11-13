@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Target, ArrowUpRight, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { formatRupiah } from '@/lib/format';
 import { useLanguage } from '@/lib/i18n';
 
@@ -25,96 +26,73 @@ export function SummaryCards({
   const cappedPercent = Math.min(100, Math.max(0, percentUsed));
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5 mb-6 sm:mb-8">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
       {/* Total Budget Card */}
-      <div className="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 group">
-        <div className="flex items-center justify-between mb-2 sm:mb-3">
-          <span className="text-[10px] sm:text-xs font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 transition-colors">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[11px] font-semibold tracking-wide text-slate-400 dark:text-slate-500 uppercase">
             {t('budgetLabel')}
           </span>
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm sm:text-lg">
-            🎯
+          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center">
+            <Target className="w-4 h-4" strokeWidth={1.75} />
           </div>
         </div>
-        <div className="space-y-0.5 sm:space-y-1">
-          <p className="text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">
-            {formatRupiah(totalBudget)}
-          </p>
-          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 line-clamp-1">
-            {totalCount !== undefined
-              ? `${totalCount} ${language === 'id' ? 'pos terencana' : 'budgeted items'}`
-              : language === 'id'
-              ? 'Target bulanan'
-              : 'Monthly target'}
-          </p>
-        </div>
-        <div className="hidden sm:flex mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <span>{language === 'id' ? 'Item Terencana' : 'Planned Items'}</span>
-          <span className="font-semibold text-slate-700 dark:text-slate-200">
-            {totalCount !== undefined
-              ? `${totalCount} ${language === 'id' ? 'pengeluaran' : 'expenses'}`
-              : language === 'id'
-              ? 'Semua Pos'
-              : 'All Items'}
-          </span>
-        </div>
+        <p className="text-lg sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white tabular-nums">
+          {formatRupiah(totalBudget)}
+        </p>
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
+          {totalCount !== undefined
+            ? `${totalCount} ${language === 'id' ? 'pos terencana' : 'planned items'}`
+            : language === 'id'
+            ? 'Target bulanan'
+            : 'Monthly target'}
+        </p>
       </div>
 
       {/* Total Aktual Card */}
-      <div className="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 group">
-        <div className="flex items-center justify-between mb-2 sm:mb-3">
-          <span className="text-[10px] sm:text-xs font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 transition-colors">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[11px] font-semibold tracking-wide text-slate-400 dark:text-slate-500 uppercase">
             {t('actualLabel')}
           </span>
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm sm:text-lg">
-            💸
+          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center">
+            <ArrowUpRight className="w-4 h-4" strokeWidth={1.75} />
           </div>
         </div>
-        <div className="space-y-0.5 sm:space-y-1">
-          <p className="text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">
+        <div className="flex items-baseline justify-between gap-2">
+          <p className="text-lg sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white tabular-nums">
             {formatRupiah(totalAktual)}
           </p>
-          <div className="flex items-center gap-1.5">
-            <span
-              className={`inline-flex items-center text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded-full ${
-                percentUsed > 100
-                  ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
-                  : percentUsed > 80
-                  ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
-                  : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-              }`}
-            >
-              {percentUsed.toFixed(0)}% {language === 'id' ? 'terpakai' : 'spent'}
-            </span>
-          </div>
+          <span
+            className={`text-[11px] font-semibold tabular-nums ${
+              percentUsed > 100
+                ? 'text-rose-600 dark:text-rose-400'
+                : percentUsed > 80
+                ? 'text-amber-600 dark:text-amber-400'
+                : 'text-slate-500 dark:text-slate-400'
+            }`}
+          >
+            {percentUsed.toFixed(0)}%
+          </span>
         </div>
-        {/* Progress bar */}
-        <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-700/60">
-          <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 sm:h-2 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                percentUsed > 100
-                  ? 'bg-rose-500'
-                  : percentUsed > 80
-                  ? 'bg-amber-500'
-                  : 'bg-indigo-500'
-              }`}
-              style={{ width: `${cappedPercent}%` }}
-            />
-          </div>
+        <div className="mt-3 w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${
+              percentUsed > 100
+                ? 'bg-rose-500'
+                : percentUsed > 80
+                ? 'bg-amber-500'
+                : 'bg-indigo-600 dark:bg-indigo-500'
+            }`}
+            style={{ width: `${cappedPercent}%` }}
+          />
         </div>
       </div>
 
-      {/* Sisa / Selisih Card (Highlighted full width on mobile) */}
-      <div
-        className={`col-span-2 md:col-span-1 relative overflow-hidden rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border transition-all duration-200 ${
-          isSurplus
-            ? 'bg-gradient-to-br from-emerald-50/40 via-white to-teal-50/30 dark:from-slate-800 dark:via-slate-800 dark:to-emerald-950/30 border-emerald-200/70 dark:border-emerald-800/60'
-            : 'bg-gradient-to-br from-rose-50/40 via-white to-orange-50/30 dark:from-slate-800 dark:via-slate-800 dark:to-rose-950/30 border-rose-200/70 dark:border-rose-800/60'
-        }`}
-      >
-        <div className="flex items-center justify-between mb-2 sm:mb-3">
-          <span className="text-[10px] sm:text-xs font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
+      {/* Sisa / Selisih Card */}
+      <div className="col-span-2 md:col-span-1 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 transition-colors">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[11px] font-semibold tracking-wide text-slate-400 dark:text-slate-500 uppercase">
             {isSurplus
               ? language === 'id'
                 ? 'Sisa Anggaran'
@@ -124,41 +102,42 @@ export function SummaryCards({
               : 'Over Budget'}
           </span>
           <div
-            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-bold text-sm sm:text-lg ${
+            className={`w-8 h-8 rounded-lg flex items-center justify-center ${
               isSurplus
-                ? 'bg-emerald-100/70 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300'
-                : 'bg-rose-100/70 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300'
+                ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
+                : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
             }`}
           >
-            {isSurplus ? '🛡️' : '⚠️'}
+            {isSurplus ? (
+              <ShieldCheck className="w-4 h-4" strokeWidth={1.75} />
+            ) : (
+              <AlertTriangle className="w-4 h-4" strokeWidth={1.75} />
+            )}
           </div>
         </div>
-        <div className="flex items-baseline justify-between sm:block space-y-0.5 sm:space-y-1">
+        <div className="flex items-baseline justify-between gap-2">
           <p
-            className={`text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight tabular-nums ${
+            className={`text-lg sm:text-2xl font-semibold tracking-tight tabular-nums ${
               isSurplus ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
             }`}
           >
             {formatRupiah(Math.abs(totalSelisih))}
           </p>
-          <span className="sm:hidden text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-            {completedCount !== undefined && totalCount !== undefined
-              ? `${completedCount}/${totalCount} ${language === 'id' ? 'Lunas' : 'Paid'}`
-              : isSurplus
-              ? 'Surplus'
-              : 'Deficit'}
-          </span>
+          {completedCount !== undefined && totalCount !== undefined && (
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 tabular-nums">
+              {completedCount}/{totalCount} {language === 'id' ? 'lunas' : 'paid'}
+            </span>
+          )}
         </div>
-        <div className="hidden sm:flex mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <span>{language === 'id' ? 'Status Checklist' : 'Payment Status'}</span>
-          <span className="font-semibold text-slate-700 dark:text-slate-200">
-            {completedCount !== undefined && totalCount !== undefined
-              ? `${completedCount}/${totalCount} ${language === 'id' ? 'terbayar' : 'paid'}`
-              : isSurplus
-              ? 'Surplus'
-              : 'Deficit'}
-          </span>
-        </div>
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
+          {isSurplus
+            ? language === 'id'
+              ? 'Dalam batas anggaran'
+              : 'Within budget'
+            : language === 'id'
+            ? 'Melebihi anggaran bulanan'
+            : 'Exceeds monthly budget'}
+        </p>
       </div>
     </div>
   );
