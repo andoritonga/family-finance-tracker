@@ -64,7 +64,7 @@ Aplikasi web modern dan Progressive Web App (PWA) untuk pencatatan, pemantauan, 
 ## 🛠️ Tech Stack
 
 - **Framework**: [Next.js 16.4](https://nextjs.org/) (App Router, React 19) + [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Styling & Icons**: [Tailwind CSS](https://tailwindcss.com/) + [Lucide React](https://lucide.dev/) (clean flat UI dengan ikon vektor konsisten)
 - **Database / Storage**:
   - **Production Mode**: [Google Sheets API v4](https://developers.google.com/sheets/api) menggunakan *lightweight native Web Crypto JWT client* (`crypto.subtle` RSASSA-PKCS1-v1_5) yang 100% kompatibel dengan Cloudflare Workers Edge Runtime tanpa dependensi berat `googleapis`.
   - **Interactive Demo Sandbox**: **Cloudflare D1 (Serverless SQLite Edge)** dengan fitur *Auto-Seed* dan *1-Click Reset Demo Data*.
