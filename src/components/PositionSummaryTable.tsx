@@ -5,6 +5,7 @@ import { Banknote, CreditCard, Landmark, Smartphone, Building2, Wallet } from 'l
 import { PositionSummary } from '@/lib/types';
 import { formatRupiah } from '@/lib/format';
 import { useLanguage } from '@/lib/i18n';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface PositionSummaryTableProps {
   summaries: PositionSummary[];
@@ -36,7 +37,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
     <div className="space-y-4">
       {/* Mobile Card View (Zero horizontal scrolling on phone) */}
       <div className="block md:hidden space-y-3">
-        {summaries.map((pos) => {
+        {summaries.map((pos, idx) => {
           const percent = pos.budget > 0 ? (pos.aktual / pos.budget) * 100 : 0;
           const allocationPercent = totalBudget > 0 ? (pos.budget / totalBudget) * 100 : 0;
           const cappedPercent = Math.min(100, Math.max(0, percent));
@@ -45,7 +46,8 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
           return (
             <div
               key={pos.posisi}
-              className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-2.5"
+              style={{ animationDelay: `${idx * 45}ms` }}
+              className="animate-card-enter p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-2.5 transition-all duration-200 hover:shadow-sm active:scale-[0.99]"
             >
               {/* Header: Icon, Name, and % Allocation badge */}
               <div className="flex items-center justify-between gap-2">
@@ -73,14 +75,14 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-300 ${
+                    className={`animate-bar-x h-full rounded-full transition-all duration-300 ${
                       percent > 100
                         ? 'bg-rose-500'
                         : percent > 80
                         ? 'bg-amber-500'
                         : 'bg-indigo-600 dark:bg-indigo-500'
                     }`}
-                    style={{ width: `${cappedPercent}%` }}
+                    style={{ width: `${cappedPercent}%`, animationDelay: `${idx * 45 + 100}ms` }}
                   />
                 </div>
               </div>
@@ -128,7 +130,10 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
         })}
 
         {/* Mobile Total Keseluruhan Card */}
-        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-2">
+        <div
+          style={{ animationDelay: `${summaries.length * 45}ms` }}
+          className="animate-card-enter p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-2"
+        >
           <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-200">
             <span className="uppercase tracking-wider">{t('totalMonthlyExpenses')}</span>
             <span className="tabular-nums">{overallPercent.toFixed(1)}% {language === 'id' ? 'Terpakai' : 'Spent'}</span>
@@ -139,7 +144,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                 {t('targetLabel')}
               </span>
               <span className="font-semibold text-slate-800 dark:text-white tabular-nums">
-                {formatRupiah(totalBudget)}
+                <AnimatedNumber value={totalBudget} formatter={formatRupiah} />
               </span>
             </div>
             <div>
@@ -147,7 +152,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                 {t('spentLabel')}
               </span>
               <span className="font-semibold text-slate-900 dark:text-white tabular-nums">
-                {formatRupiah(totalAktual)}
+                <AnimatedNumber value={totalAktual} formatter={formatRupiah} />
               </span>
             </div>
             <div className="text-right">
@@ -161,7 +166,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                     : 'text-rose-600 dark:text-rose-400'
                 }`}
               >
-                {formatRupiah(totalSelisih)}
+                <AnimatedNumber value={totalSelisih} formatter={formatRupiah} />
               </span>
             </div>
           </div>
@@ -183,7 +188,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
-              {summaries.map((pos) => {
+              {summaries.map((pos, idx) => {
                 const percent = pos.budget > 0 ? (pos.aktual / pos.budget) * 100 : 0;
                 const allocationPercent = totalBudget > 0 ? (pos.budget / totalBudget) * 100 : 0;
                 const cappedPercent = Math.min(100, Math.max(0, percent));
@@ -234,14 +239,14 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                       <div className="flex items-center gap-3">
                         <div className="flex-1 bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all duration-300 ${
+                            className={`animate-bar-x h-full rounded-full transition-all duration-300 ${
                               percent > 100
                                 ? 'bg-rose-500'
                                 : percent > 80
                                 ? 'bg-amber-500'
                                 : 'bg-indigo-600 dark:bg-indigo-500'
                             }`}
-                            style={{ width: `${cappedPercent}%` }}
+                            style={{ width: `${cappedPercent}%`, animationDelay: `${idx * 45 + 80}ms` }}
                           />
                         </div>
                         <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 w-11 text-right tabular-nums">
@@ -259,13 +264,13 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
               <tr className="bg-slate-50 dark:bg-slate-900/60 border-t-2 border-slate-200 dark:border-slate-700 font-bold text-slate-900 dark:text-white text-xs">
                 <td className="py-3.5 px-4 uppercase tracking-wider">{language === 'id' ? 'Total Keseluruhan' : 'Grand Total'}</td>
                 <td className="py-3.5 px-4 text-right tabular-nums text-sm">
-                  {formatRupiah(totalBudget)}
+                  <AnimatedNumber value={totalBudget} formatter={formatRupiah} />
                 </td>
                 <td className="py-3.5 px-4 text-center tabular-nums text-xs text-indigo-600 dark:text-indigo-400 font-bold">
                   100%
                 </td>
                 <td className="py-3.5 px-4 text-right tabular-nums text-sm text-indigo-600 dark:text-indigo-400">
-                  {formatRupiah(totalAktual)}
+                  <AnimatedNumber value={totalAktual} formatter={formatRupiah} />
                 </td>
                 <td className="py-3.5 px-4 text-right tabular-nums text-sm">
                   <span
@@ -275,7 +280,7 @@ export function PositionSummaryTable({ summaries }: PositionSummaryTableProps) {
                         : 'text-rose-600 dark:text-rose-400'
                     }
                   >
-                    {formatRupiah(totalSelisih)}
+                    <AnimatedNumber value={totalSelisih} formatter={formatRupiah} />
                   </span>
                 </td>
                 <td className="py-3.5 px-4 text-center">

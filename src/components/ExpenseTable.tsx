@@ -295,33 +295,48 @@ export function ExpenseTable({
             ))}
           </select>
 
-          {/* Checklist Toggle Buttons */}
-          <div className="inline-flex rounded-xl p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700/60 text-xs font-medium">
+          {/* Checklist Toggle Buttons (Sliding Segmented Control) */}
+          <div className="relative grid grid-cols-3 rounded-xl p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700/60 text-xs font-medium">
+            <div
+              aria-hidden="true"
+              className="absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/3)] rounded-lg bg-white dark:bg-slate-800 shadow-sm transition-transform duration-200 ease-out pointer-events-none"
+              style={{
+                transform:
+                  filterChecklist === 'ALL'
+                    ? 'translateX(0%)'
+                    : filterChecklist === 'UNCHECKED'
+                    ? 'translateX(100%)'
+                    : 'translateX(200%)',
+              }}
+            />
             <button
+              type="button"
               onClick={() => setFilterChecklist('ALL')}
-              className={`px-3 py-1 rounded-lg transition-all ${
+              className={`relative z-10 px-3 py-1 rounded-lg transition-colors text-center ${
                 filterChecklist === 'ALL'
-                  ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-sm font-semibold'
+                  ? 'text-slate-800 dark:text-white font-semibold'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
               }`}
             >
               {t('filterAll')}
             </button>
             <button
+              type="button"
               onClick={() => setFilterChecklist('UNCHECKED')}
-              className={`px-3 py-1 rounded-lg transition-all ${
+              className={`relative z-10 px-3 py-1 rounded-lg transition-colors text-center ${
                 filterChecklist === 'UNCHECKED'
-                  ? 'bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-400 shadow-sm font-semibold'
+                  ? 'text-amber-700 dark:text-amber-400 font-semibold'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
               }`}
             >
               {t('filterUnpaid')}
             </button>
             <button
+              type="button"
               onClick={() => setFilterChecklist('CHECKED')}
-              className={`px-3 py-1 rounded-lg transition-all ${
+              className={`relative z-10 px-3 py-1 rounded-lg transition-colors text-center ${
                 filterChecklist === 'CHECKED'
-                  ? 'bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 shadow-sm font-semibold'
+                  ? 'text-emerald-700 dark:text-emerald-400 font-semibold'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
               }`}
             >
@@ -389,7 +404,7 @@ export function ExpenseTable({
                       {isBeingUpdated ? (
                         <span className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                       ) : isChecked ? (
-                        <Check className="w-4 h-4" strokeWidth={2.5} />
+                        <Check className="w-4 h-4 animate-pop-check" strokeWidth={2.5} />
                       ) : null}
                     </button>
 
@@ -679,15 +694,23 @@ export function ExpenseTable({
 
                       {/* Checklist */}
                       <td className="py-3.5 px-4 text-center">
-                        <label className="relative inline-flex items-center justify-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={item.checklist}
-                            onChange={() => toggleChecklist(item)}
-                            disabled={isBeingUpdated}
-                            className="w-5 h-5 rounded-lg border-2 border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500/20 focus:ring-offset-0 transition-all cursor-pointer accent-indigo-600 disabled:opacity-50"
-                          />
-                        </label>
+                        <button
+                          type="button"
+                          onClick={() => toggleChecklist(item)}
+                          disabled={isBeingUpdated}
+                          aria-label={isChecked ? 'Tandai belum bayar' : 'Tandai sudah bayar'}
+                          className={`w-6 h-6 rounded-lg inline-flex items-center justify-center transition-all active:scale-90 disabled:opacity-50 ${
+                            isChecked
+                              ? 'bg-emerald-500 text-white shadow-sm'
+                              : 'border-2 border-slate-300 dark:border-slate-600 hover:border-indigo-500 bg-white dark:bg-slate-900'
+                          }`}
+                        >
+                          {isBeingUpdated ? (
+                            <span className="w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                          ) : isChecked ? (
+                            <Check className="w-3.5 h-3.5 animate-pop-check" strokeWidth={2.5} />
+                          ) : null}
+                        </button>
                       </td>
 
                       {/* Edit Button */}

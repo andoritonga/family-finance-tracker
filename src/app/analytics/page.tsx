@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { GenerateModal } from '@/components/GenerateModal';
+import { AnimatedNumber } from '@/components/AnimatedNumber';
 import { formatRupiah } from '@/lib/format';
 import { useLanguage } from '@/lib/i18n';
 import {
@@ -136,16 +137,29 @@ export default function AnalyticsPage() {
           </p>
         </div>
 
-        {/* Time range filters */}
-        <div className="grid grid-cols-3 sm:inline-flex w-full sm:w-auto rounded-xl p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 text-[11px] sm:text-xs font-semibold self-start sm:self-auto">
+        {/* Time range filters (Sliding Segmented Control) */}
+        <div className="relative grid grid-cols-3 w-full sm:w-auto sm:min-w-[260px] rounded-xl p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 text-[11px] sm:text-xs font-semibold self-start sm:self-auto">
+          <div
+            aria-hidden="true"
+            className="absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/3)] rounded-lg bg-white dark:bg-slate-800 shadow-sm transition-transform duration-200 ease-out pointer-events-none"
+            style={{
+              transform:
+                timeRange === 'ALL'
+                  ? 'translateX(0%)'
+                  : timeRange === 'LAST_6'
+                  ? 'translateX(100%)'
+                  : 'translateX(200%)',
+            }}
+          />
           <button
+            type="button"
             onClick={() => {
               setTimeRange('ALL');
               setActiveTooltip(null);
             }}
-            className={`px-2 sm:px-3 py-1.5 rounded-lg transition-all truncate ${
+            className={`relative z-10 px-2 sm:px-3 py-1.5 rounded-lg transition-colors truncate text-center ${
               timeRange === 'ALL'
-                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm font-bold'
+                ? 'text-slate-900 dark:text-white font-bold'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
@@ -154,26 +168,28 @@ export default function AnalyticsPage() {
               : `All (${data?.monthlyTrends.length || 0})`}
           </button>
           <button
+            type="button"
             onClick={() => {
               setTimeRange('LAST_6');
               setActiveTooltip(null);
             }}
-            className={`px-2 sm:px-3 py-1.5 rounded-lg transition-all truncate ${
+            className={`relative z-10 px-2 sm:px-3 py-1.5 rounded-lg transition-colors truncate text-center ${
               timeRange === 'LAST_6'
-                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm font-bold'
+                ? 'text-slate-900 dark:text-white font-bold'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
             {language === 'id' ? '6 Bulan' : 'Last 6M'}
           </button>
           <button
+            type="button"
             onClick={() => {
               setTimeRange('LAST_3');
               setActiveTooltip(null);
             }}
-            className={`px-2 sm:px-3 py-1.5 rounded-lg transition-all truncate ${
+            className={`relative z-10 px-2 sm:px-3 py-1.5 rounded-lg transition-colors truncate text-center ${
               timeRange === 'LAST_3'
-                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm font-bold'
+                ? 'text-slate-900 dark:text-white font-bold'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
@@ -207,7 +223,10 @@ export default function AnalyticsPage() {
           {/* Executive KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Card 1: Rata-rata Pengeluaran */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5">
+            <div
+              style={{ animationDelay: '0ms' }}
+              className="animate-card-enter bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 transition-all duration-200 hover:shadow-sm hover:border-slate-300/90 dark:hover:border-slate-700 active:scale-[0.985]"
+            >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {t('averageExpenses')}
@@ -215,7 +234,7 @@ export default function AnalyticsPage() {
                 <ArrowUpRight className="w-4 h-4 text-slate-400" strokeWidth={1.75} />
               </div>
               <p className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
-                {formatRupiah(data.kpi.avgMonthlySpend)}
+                <AnimatedNumber value={data.kpi.avgMonthlySpend} formatter={formatRupiah} />
               </p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 tabular-nums">
                 {t('targetBudgetLabel')}: {formatRupiah(data.kpi.avgMonthlyBudget)}
@@ -223,7 +242,10 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Card 2: Akumulasi Alokasi Tabungan */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5">
+            <div
+              style={{ animationDelay: '60ms' }}
+              className="animate-card-enter bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 transition-all duration-200 hover:shadow-sm hover:border-slate-300/90 dark:hover:border-slate-700 active:scale-[0.985]"
+            >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {t('totalSavingsAlloc')}
@@ -231,7 +253,7 @@ export default function AnalyticsPage() {
                 <Landmark className="w-4 h-4 text-emerald-600 dark:text-emerald-400" strokeWidth={1.75} />
               </div>
               <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">
-                {formatRupiah(data.kpi.totalAnnualSavings || 0)}
+                <AnimatedNumber value={data.kpi.totalAnnualSavings || 0} formatter={formatRupiah} />
               </p>
               <div className="mt-1 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 tabular-nums">
                 <span>{language === 'id' ? 'Rata-rata' : 'Average'}: {formatRupiah(data.kpi.avgMonthlySavings || 0)}{t('perMonth')}</span>
@@ -244,7 +266,10 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Card 3: Disiplin Anggaran */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5">
+            <div
+              style={{ animationDelay: '120ms' }}
+              className="animate-card-enter bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 transition-all duration-200 hover:shadow-sm hover:border-slate-300/90 dark:hover:border-slate-700 active:scale-[0.985]"
+            >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {t('budgetDiscipline')}
@@ -252,7 +277,7 @@ export default function AnalyticsPage() {
                 <Target className="w-4 h-4 text-indigo-600 dark:text-indigo-400" strokeWidth={1.75} />
               </div>
               <p className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
-                {data.kpi.disciplineRate.toFixed(0)}%
+                <AnimatedNumber value={data.kpi.disciplineRate} formatter={(v) => `${v.toFixed(0)}%`} />
               </p>
               <div className="mt-1 flex items-center gap-1.5">
                 <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -262,7 +287,10 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Card 4: Bulan Paling Efisien */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5">
+            <div
+              style={{ animationDelay: '180ms' }}
+              className="animate-card-enter bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 transition-all duration-200 hover:shadow-sm hover:border-slate-300/90 dark:hover:border-slate-700 active:scale-[0.985]"
+            >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {t('lowestSpendMonth')}
@@ -273,7 +301,7 @@ export default function AnalyticsPage() {
                 {formatSheetMonth(data.kpi.lowestSpendMonth.name)}
               </p>
               <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1 tabular-nums">
-                {formatRupiah(data.kpi.lowestSpendMonth.aktual)}
+                <AnimatedNumber value={data.kpi.lowestSpendMonth.aktual} formatter={formatRupiah} />
               </p>
             </div>
           </div>
@@ -303,10 +331,85 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
+            {/* Animated SVG Trend Line (Actual vs Budget trajectory) */}
+            {filteredTrends.length >= 2 && (() => {
+              const svgW = 600;
+              const svgH = 92;
+              const padX = 18;
+              const padY = 12;
+              const usableW = svgW - padX * 2;
+              const usableH = svgH - padY * 2;
+              const count = filteredTrends.length;
+              const getX = (i: number) => padX + (i / (count - 1)) * usableW;
+              const getY = (val: number) =>
+                padY + usableH - Math.min(1, Math.max(0, val / maxChartValue)) * usableH;
+
+              const budgetPts = filteredTrends.map((tr, i) => `${getX(i)},${getY(tr.budget)}`).join(' ');
+              const actualPts = filteredTrends.map((tr, i) => `${getX(i)},${getY(tr.aktual)}`).join(' ');
+              const actualArea = `${padX},${svgH - padY} ${actualPts} ${getX(count - 1)},${svgH - padY}`;
+
+              return (
+                <div key={`line-${timeRange}`} className="w-full pt-1">
+                  <svg
+                    viewBox={`0 0 ${svgW} ${svgH}`}
+                    className="w-full h-20 sm:h-24 overflow-visible"
+                    aria-label="Trend Line Chart"
+                  >
+                    <defs>
+                      <linearGradient id="actualTrendArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="rgb(99, 102, 241)" stopOpacity="0.18" />
+                        <stop offset="100%" stopColor="rgb(99, 102, 241)" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <polygon points={actualArea} fill="url(#actualTrendArea)" />
+                    <polyline
+                      points={budgetPts}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeDasharray="4 4"
+                      className="text-indigo-300 dark:text-indigo-700"
+                    />
+                    <polyline
+                      points={actualPts}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="animate-draw-line text-indigo-600 dark:text-indigo-400"
+                    />
+                    {filteredTrends.map((tr, i) => {
+                      const cx = getX(i);
+                      const cy = getY(tr.aktual);
+                      const isOver = tr.aktual > tr.budget;
+                      const isActive = activeTooltip?.name === tr.name;
+                      return (
+                        <circle
+                          key={tr.name}
+                          cx={cx}
+                          cy={cy}
+                          r={isActive ? 5 : 3.5}
+                          onMouseEnter={() => setActiveTooltip(tr)}
+                          onClick={() => setActiveTooltip((prev) => (prev?.name === tr.name ? null : tr))}
+                          className={`cursor-pointer transition-all duration-150 ${
+                            isOver
+                              ? 'fill-rose-500 stroke-white dark:stroke-slate-900'
+                              : 'fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-slate-900'
+                          }`}
+                          strokeWidth="1.75"
+                        />
+                      );
+                    })}
+                  </svg>
+                </div>
+              );
+            })()}
+
             {/* Mobile Horizontal Bar View when timeRange === 'ALL' (Zero horizontal scroll) */}
             {timeRange === 'ALL' && (
               <div className="block md:hidden space-y-2.5 pt-1">
-                {[...filteredTrends].reverse().map((trend) => {
+                {[...filteredTrends].reverse().map((trend, idx) => {
                   const budgetWidth = Math.min(100, Math.max(4, (trend.budget / maxChartValue) * 100));
                   const aktualWidth = Math.min(100, Math.max(4, (trend.aktual / maxChartValue) * 100));
                   const isOver = trend.aktual > trend.budget;
@@ -343,8 +446,8 @@ export default function AnalyticsPage() {
                         <div className="flex items-center gap-2">
                           <div className="flex-1 bg-slate-200/60 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                             <div
-                              className="bg-indigo-200 dark:bg-indigo-900/80 border border-indigo-400/70 dark:border-indigo-700 h-full rounded-full transition-all duration-300"
-                              style={{ width: `${budgetWidth}%` }}
+                              className="animate-bar-x bg-indigo-200 dark:bg-indigo-900/80 border border-indigo-400/70 dark:border-indigo-700 h-full rounded-full transition-all duration-300"
+                              style={{ width: `${budgetWidth}%`, animationDelay: `${idx * 35}ms` }}
                             />
                           </div>
                         </div>
@@ -352,12 +455,12 @@ export default function AnalyticsPage() {
                         <div className="flex items-center gap-2">
                           <div className="flex-1 bg-slate-200/60 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full transition-all duration-300 ${
+                              className={`animate-bar-x h-full rounded-full transition-all duration-300 ${
                                 isOver
                                   ? 'bg-rose-500'
                                   : 'bg-indigo-600 dark:bg-indigo-500'
                               }`}
-                              style={{ width: `${aktualWidth}%` }}
+                              style={{ width: `${aktualWidth}%`, animationDelay: `${idx * 35 + 60}ms` }}
                             />
                           </div>
                         </div>
@@ -392,7 +495,7 @@ export default function AnalyticsPage() {
                     timeRange === 'ALL' ? 'min-w-[640px]' : 'w-full'
                   }`}
                 >
-                  {filteredTrends.map((trendItem) => {
+                  {filteredTrends.map((trendItem, idx) => {
                     const budgetHeight = (trendItem.budget / maxChartValue) * 100;
                     const aktualHeight = (trendItem.aktual / maxChartValue) * 100;
                     const isOver = trendItem.aktual > trendItem.budget;
@@ -403,7 +506,7 @@ export default function AnalyticsPage() {
 
                     return (
                       <div
-                        key={trendItem.name}
+                        key={`${timeRange}-${trendItem.name}`}
                         onClick={() =>
                           setActiveTooltip((prev) =>
                             prev?.name === trendItem.name ? null : trendItem
@@ -417,18 +520,18 @@ export default function AnalyticsPage() {
                         <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 h-full">
                           {/* Budget Bar */}
                           <div
-                            className="w-1/2 max-w-[26px] bg-indigo-100 dark:bg-indigo-950/70 border-t border-x border-indigo-300 dark:border-indigo-800 rounded-t-md transition-all duration-300 group-hover:bg-indigo-200 dark:group-hover:bg-indigo-900/80"
-                            style={{ height: `${Math.max(4, budgetHeight)}%` }}
+                            className="animate-bar-y w-1/2 max-w-[26px] bg-indigo-100 dark:bg-indigo-950/70 border-t border-x border-indigo-300 dark:border-indigo-800 rounded-t-md transition-all duration-300 group-hover:bg-indigo-200 dark:group-hover:bg-indigo-900/80"
+                            style={{ height: `${Math.max(4, budgetHeight)}%`, animationDelay: `${idx * 40}ms` }}
                           />
 
                           {/* Aktual Bar */}
                           <div
-                            className={`w-1/2 max-w-[26px] rounded-t-md transition-all duration-300 ${
+                            className={`animate-bar-y w-1/2 max-w-[26px] rounded-t-md transition-all duration-300 ${
                               isOver
                                 ? 'bg-rose-500 group-hover:bg-rose-600'
                                 : 'bg-indigo-600 dark:bg-indigo-500 group-hover:bg-indigo-700 dark:group-hover:bg-indigo-400'
                             }`}
-                            style={{ height: `${Math.max(4, aktualHeight)}%` }}
+                            style={{ height: `${Math.max(4, aktualHeight)}%`, animationDelay: `${idx * 40 + 50}ms` }}
                           />
                         </div>
 
@@ -533,8 +636,8 @@ export default function AnalyticsPage() {
                       <div className="flex items-center gap-3">
                         <div className="flex-1 bg-slate-200/70 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                           <div
-                            className="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full"
-                            style={{ width: `${percentOfTop}%` }}
+                            className="animate-bar-x bg-indigo-600 dark:bg-indigo-500 h-full rounded-full"
+                            style={{ width: `${percentOfTop}%`, animationDelay: `${idx * 40}ms` }}
                           />
                         </div>
                         <span className="text-[10px] text-slate-400 tabular-nums shrink-0">
@@ -561,7 +664,7 @@ export default function AnalyticsPage() {
               </div>
 
               <div className="space-y-3">
-                {data.positionDistribution.map((pos) => {
+                {data.positionDistribution.map((pos, idx) => {
                   return (
                     <div
                       key={pos.posisi}
@@ -584,8 +687,8 @@ export default function AnalyticsPage() {
                       {/* Percentage Bar */}
                       <div className="w-full bg-slate-200/70 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                         <div
-                          className="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-500"
-                          style={{ width: `${Math.min(100, pos.percentage)}%` }}
+                          className="animate-bar-x bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-500"
+                          style={{ width: `${Math.min(100, pos.percentage)}%`, animationDelay: `${idx * 45}ms` }}
                         />
                       </div>
                     </div>
@@ -660,7 +763,7 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="w-full bg-slate-200/80 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all duration-300 ${
+                          className={`animate-bar-x h-full rounded-full transition-all duration-300 ${
                             percent > 100
                               ? 'bg-rose-500'
                               : percent > 85
