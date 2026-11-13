@@ -1,14 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { AlertCircle, Check, Loader2, Sparkles, X } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n';
+import { useToast } from '@/components/Toast';
 
 export function GenerateModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { t, language } = useLanguage();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !loading) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [loading, onClose]);
 
   const currentMonthIdx = new Date().getMonth(); // 0-based
   const [targetMonth, setTargetMonth] = useState<number>(
@@ -71,6 +84,13 @@ export function GenerateModal({ onClose }: { onClose: () => void }) {
         throw new Error(data.error || data.details || 'Gagal membuat lembar baru');
       }
 
+      showToast({
+        type: 'success',
+        message:
+          language === 'id'
+            ? `Lembar ${data.sheet.name} berhasil dibuat`
+            : `Sheet ${data.sheet.name} created`,
+      });
       router.push(`/bulan/${encodeURIComponent(data.sheet.name)}`);
       onClose();
     } catch (err: any) {
@@ -81,30 +101,51 @@ export function GenerateModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 animate-fadeIn">
-      <div className="bg-white dark:bg-slate-800 rounded-t-[2rem] sm:rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-700/80 animate-slideUp max-h-[92vh] overflow-y-auto pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !loading) onClose();
+      }}
+      className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 animate-fadeIn"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="generate-modal-title"
+        className="bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-w-md w-full shadow-xl border border-slate-200 dark:border-slate-800 animate-slideUp sm:animate-fadeIn max-h-[92vh] overflow-y-auto pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+      >
         {/* Mobile Drag Handle */}
-        <div className="sm:hidden flex justify-center -mt-2 -mb-2">
-          <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+        <div className="sm:hidden flex justify-center -mt-1 mb-3">
+          <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
         </div>
 
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-lg">
-            ✨
+        <div className="flex items-center justify-between gap-3 mb-5">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/60 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4" strokeWidth={2} />
+            </div>
+            <div className="min-w-0">
+              <h2 id="generate-modal-title" className="text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate">
+                {t('generateTitle')}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                {t('generateDesc')}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              {t('generateTitle')}
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {t('generateDesc')}
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            aria-label={t('cancel')}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+          >
+            <X className="w-4 h-4" strokeWidth={2} />
+          </button>
         </div>
 
         {error && (
-          <div className="mb-4 p-3.5 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-2xl text-xs font-medium flex items-start gap-2">
-            <span>⚠️</span>
+          <div role="alert" className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-xl text-xs font-medium flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" strokeWidth={2} />
             <span>{error}</span>
           </div>
         )}
@@ -144,40 +185,45 @@ export function GenerateModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
+          <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 text-[11px] text-slate-500 dark:text-slate-400 space-y-1.5">
             <p className="flex items-center gap-1.5">
-              <span className="text-emerald-500">✓</span> {t('generateFeature1')}
+              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" strokeWidth={2.5} />
+              <span>{t('generateFeature1')}</span>
             </p>
             <p className="flex items-center gap-1.5">
-              <span className="text-emerald-500">✓</span> {t('generateFeature2')}
+              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" strokeWidth={2.5} />
+              <span>{t('generateFeature2')}</span>
             </p>
             <p className="flex items-center gap-1.5">
-              <span className="text-emerald-500">✓</span> {t('generateFeature3')}
+              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" strokeWidth={2.5} />
+              <span>{t('generateFeature3')}</span>
             </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2.5">
+        <div className="flex items-center justify-end gap-2">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-semibold text-xs"
+            className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors font-semibold text-xs"
             disabled={loading}
           >
             {t('cancel')}
           </button>
           <button
+            type="button"
             onClick={handleGenerate}
             disabled={loading}
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl transition-all font-semibold text-xs flex items-center gap-2 shadow-sm shadow-indigo-200 dark:shadow-none disabled:opacity-60"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white rounded-xl transition-all font-semibold text-xs inline-flex items-center gap-1.5 disabled:opacity-60"
           >
             {loading ? (
               <>
-                <span className="animate-spin text-sm">🔄</span>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" strokeWidth={2} />
                 <span>{t('generating')}</span>
               </>
             ) : (
               <>
-                <span>✨</span>
+                <Sparkles className="w-3.5 h-3.5" strokeWidth={2} />
                 <span>{t('processGenerate')}</span>
               </>
             )}

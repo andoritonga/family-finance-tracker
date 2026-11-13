@@ -5,6 +5,7 @@ import { ExpenseItem } from '@/lib/types';
 import { formatRupiah } from '@/lib/format';
 import { EditItemModal } from '@/components/EditItemModal';
 import { useLanguage } from '@/lib/i18n';
+import { useToast } from '@/components/Toast';
 import { Search, Plus, Pencil, Check, X, Lightbulb, FileText } from 'lucide-react';
 
 interface ExpenseTableProps {
@@ -21,6 +22,7 @@ export function ExpenseTable({
   onOpenAddModal,
 }: ExpenseTableProps) {
   const { t, language } = useLanguage();
+  const { showToast } = useToast();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -137,14 +139,50 @@ export function ExpenseTable({
 
       if (res.ok) {
         onUpdate();
+        if (newChecklist !== undefined) {
+          showToast({
+            type: newChecklist ? 'success' : 'info',
+            message: newChecklist
+              ? language === 'id'
+                ? `"${item.pengeluaran}" ditandai lunas`
+                : `"${item.pengeluaran}" marked paid`
+              : language === 'id'
+              ? `"${item.pengeluaran}" ditandai belum bayar`
+              : `"${item.pengeluaran}" marked unpaid`,
+            actionLabel: language === 'id' ? 'Urungkan' : 'Undo',
+            onAction: () => handleUpdate(item, item.aktual, item.checklist),
+          });
+        } else if (newAktual !== undefined) {
+          showToast({
+            type: 'success',
+            message:
+              language === 'id'
+                ? `Aktual "${item.pengeluaran}" diperbarui`
+                : `Actual for "${item.pengeluaran}" updated`,
+          });
+        }
       } else {
         // Rollback on server error
         setLocalItems(items);
+        showToast({
+          type: 'error',
+          message:
+            language === 'id'
+              ? 'Gagal menyimpan perubahan.'
+              : 'Failed to save changes.',
+        });
       }
     } catch (e) {
       console.error('Update failed', e);
       // Rollback on network failure
       setLocalItems(items);
+      showToast({
+        type: 'error',
+        message:
+          language === 'id'
+            ? 'Koneksi bermasalah. Perubahan dibatalkan.'
+            : 'Network error. Changes reverted.',
+      });
     } finally {
       setUpdatingId(null);
     }
