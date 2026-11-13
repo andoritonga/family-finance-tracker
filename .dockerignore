@@ -1,9 +1,15 @@
 node_modules
 .next
+.open-next
+.wrangler
 .git
 .gitignore
 *.md
+.env
 .env*.local
+.dev.vars
+.dev.vars.*
+wrangler.jsonc
 *.json
 !package.json
 !package-lock.json

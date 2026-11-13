@@ -46,6 +46,11 @@ export async function GET(
       if (cached) {
         return NextResponse.json(cached);
       }
+    } else {
+      const recent = cache.getRecentForRefresh(cacheKey, 10);
+      if (recent) {
+        return NextResponse.json(recent);
+      }
     }
 
     const sheets = getSheets();
@@ -96,7 +101,7 @@ export async function GET(
   } catch (error: any) {
     console.error(`Error fetching sheet:`, error);
     return NextResponse.json(
-      { error: 'Failed to fetch sheet data', details: error.message },
+      { error: 'Gagal memuat rincian lembar anggaran' },
       { status: 500 }
     );
   }
@@ -109,6 +114,9 @@ export async function PUT(
   try {
     const { sheetName: rawSheetName } = await params;
     const sheetName = decodeURIComponent(rawSheetName);
+    if (!parseSheetName(sheetName)) {
+      return NextResponse.json({ error: 'Format nama lembar tidak valid' }, { status: 400 });
+    }
     const body = await request.json();
 
     if (isDemoMode()) {
@@ -266,7 +274,13 @@ export async function PUT(
     // Prefer exact 1-based sheetRow when provided; fallback to rowIndex + 2
     const sheetRow = typeof explicitSheetRow === 'number' && explicitSheetRow >= 2
       ? explicitSheetRow
-      : rowIndex + 2;
+      : typeof rowIndex === 'number'
+      ? rowIndex + 2
+      : NaN;
+
+    if (!Number.isInteger(sheetRow) || sheetRow < 2 || sheetRow > 300) {
+      return NextResponse.json({ error: 'Nomor baris item tidak valid' }, { status: 400 });
+    }
     
     const updateData: { range: string; values: any[][] }[] = [];
 
@@ -341,7 +355,7 @@ export async function PUT(
   } catch (error: any) {
     console.error(`Error updating sheet:`, error);
     return NextResponse.json(
-      { error: 'Failed to update sheet data', details: error.message },
+      { error: 'Gagal memperbarui data lembar anggaran' },
       { status: 500 }
     );
   }
@@ -354,6 +368,9 @@ export async function DELETE(
   try {
     const { sheetName: rawSheetName } = await params;
     const sheetName = decodeURIComponent(rawSheetName);
+    if (!parseSheetName(sheetName)) {
+      return NextResponse.json({ error: 'Format nama lembar tidak valid' }, { status: 400 });
+    }
     const body = await request.json();
     const { rowIndex, sheetRow: explicitSheetRow } = body;
 
@@ -369,19 +386,47 @@ export async function DELETE(
       return NextResponse.json({ success: true, message: 'Item berhasil dihapus' });
     }
 
+    // 0-based dimension index in Google Sheets
+    const deleteRowIndex0Based = typeof explicitSheetRow === 'number' && explicitSheetRow >= 2
+      ? explicitSheetRow - 1
+      : typeof rowIndex === 'number'
+      ? rowIndex + 1
+      : NaN;
+
+    if (
+      !Number.isInteger(deleteRowIndex0Based) ||
+      deleteRowIndex0Based < 1 ||
+      deleteRowIndex0Based > 300
+    ) {
+      return NextResponse.json({ error: 'Nomor baris yang dihapus tidak valid' }, { status: 400 });
+    }
+
     const sheets = getSheets();
     const spreadsheetId = getSpreadsheetId();
-    const meta = await sheets.spreadsheets.get({ spreadsheetId });
+    const [meta, beforeRes] = await Promise.all([
+      sheets.spreadsheets.get({ spreadsheetId }),
+      sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `'${sheetName}'!A:B`,
+        valueRenderOption: 'FORMATTED_VALUE',
+      }),
+    ]);
+
     const targetSheet = meta.data.sheets?.find((s) => s.properties?.title === sheetName);
     if (!targetSheet || targetSheet.properties?.sheetId === undefined) {
       return NextResponse.json({ error: 'Sheet tidak ditemukan' }, { status: 404 });
     }
     const sheetId = targetSheet.properties.sheetId;
 
-    // 0-based dimension index in Google Sheets
-    const deleteRowIndex0Based = typeof explicitSheetRow === 'number' && explicitSheetRow >= 2
-      ? explicitSheetRow - 1
-      : rowIndex + 1;
+    // Ensure the target row is actually a numbered expense item row (protects Header, Jumlah, Nabung, Posisi)
+    const beforeRows = beforeRes.data.values || [];
+    const targetCol0 = (beforeRows[deleteRowIndex0Based]?.[0] || '').trim();
+    if (!/^\d+$/.test(targetCol0)) {
+      return NextResponse.json(
+        { error: 'Baris tersebut bukan baris item pengeluaran yang dapat dihapus' },
+        { status: 400 }
+      );
+    }
 
     await sheets.spreadsheets.batchUpdate({
       spreadsheetId,
@@ -433,7 +478,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error('Error deleting item:', error);
     return NextResponse.json(
-      { error: 'Gagal menghapus item pengeluaran', details: error.message },
+      { error: 'Gagal menghapus item pengeluaran' },
       { status: 500 }
     );
   }
@@ -446,6 +491,9 @@ export async function POST(
   try {
     const { sheetName: rawSheetName } = await params;
     const sheetName = decodeURIComponent(rawSheetName);
+    if (!parseSheetName(sheetName)) {
+      return NextResponse.json({ error: 'Format nama lembar tidak valid' }, { status: 400 });
+    }
     const body = await request.json();
     
     const { pengeluaran, budget, posisi, keterangan } = body;
@@ -571,7 +619,7 @@ export async function POST(
   } catch (error: any) {
     console.error(`Error adding item to sheet:`, error);
     return NextResponse.json(
-      { error: 'Gagal menambahkan item pengeluaran', details: error.message },
+      { error: 'Gagal menambahkan item pengeluaran' },
       { status: 500 }
     );
   }

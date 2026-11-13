@@ -21,6 +21,14 @@ export async function GET(request: NextRequest) {
       if (cached) {
         return NextResponse.json(cached);
       }
+    } else {
+      const recent = cache.getRecentForRefresh<{ name: string; month: number; year: number }[]>(
+        'sheetList',
+        10
+      );
+      if (recent) {
+        return NextResponse.json(recent);
+      }
     }
 
     const sheets = getSheets();
@@ -53,7 +61,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Error fetching sheets:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch sheets', details: error.message },
+      { error: 'Gagal memuat daftar lembar anggaran' },
       { status: 500 }
     );
   }

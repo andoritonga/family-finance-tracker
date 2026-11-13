@@ -1,4 +1,4 @@
-const CACHE_NAME = 'apbk-cache-v3';
+const CACHE_NAME = 'apbk-cache-v4';
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/favicon.png',
@@ -33,7 +33,16 @@ self.addEventListener('activate', (event) => {
 // DO NOT cache HTML pages, API routes, or Next.js RSC bundles.
 // Only cache static images and manifest for PWA offline installability.
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET') return;
+
+  let url;
+  try {
+    url = new URL(event.request.url);
+  } catch {
+    return;
+  }
+
+  if (url.origin !== self.location.origin) return;
 
   // If requesting a static icon/manifest, serve from cache if available
   if (STATIC_ASSETS.includes(url.pathname)) {

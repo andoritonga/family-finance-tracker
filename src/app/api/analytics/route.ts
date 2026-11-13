@@ -23,6 +23,11 @@ export async function GET(request: NextRequest) {
       if (cached) {
         return NextResponse.json(cached);
       }
+    } else {
+      const recent = cache.getRecentForRefresh(cacheKey, 10);
+      if (recent) {
+        return NextResponse.json(recent);
+      }
     }
 
     const sheets = getSheets();
@@ -293,7 +298,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Error in analytics API:', error);
     return NextResponse.json(
-      { error: 'Gagal mengambil data analytics', details: error.message },
+      { error: 'Gagal mengambil data analytics' },
       { status: 500 }
     );
   }

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSheets, getSpreadsheetId } from '@/lib/google-sheets';
 import { parseSheetName, getSheetName, parseSheetData } from '@/lib/sheet-helpers';
+import {
+  escapeSheetFormulaString,
+  evaluateArithmeticExpression,
+  sanitizeSheetText,
+} from '@/lib/format';
 import { cache } from '@/lib/cache';
 import { isDemoMode, generateDemoSheet } from '@/lib/demo-store';
 
@@ -58,18 +63,31 @@ export async function POST(request: NextRequest) {
 
     // Determine source
     let source = monthlySheets[0]; // Latest by default
-    if (sourceMonth && sourceYear) {
-      const found = monthlySheets.find(s => s!.month === sourceMonth && s!.year === sourceYear);
+    if (sourceMonth !== undefined && sourceYear !== undefined) {
+      const sMonth = Number(sourceMonth);
+      const sYear = Number(sourceYear);
+      const found = monthlySheets.find(s => s!.month === sMonth && s!.year === sYear);
       if (found) source = found;
       else return NextResponse.json({ error: 'Source sheet not found' }, { status: 404 });
     }
     
     // Determine target
-    let tMonth = targetMonth;
-    let tYear = targetYear;
+    let tMonth = targetMonth !== undefined ? Number(targetMonth) : undefined;
+    let tYear = targetYear !== undefined ? Number(targetYear) : undefined;
     if (!tMonth || !tYear) {
       tMonth = source!.month === 12 ? 1 : source!.month + 1;
       tYear = source!.month === 12 ? source!.year + 1 : source!.year;
+    }
+
+    if (
+      !Number.isInteger(tMonth) ||
+      tMonth < 1 ||
+      tMonth > 12 ||
+      !Number.isInteger(tYear) ||
+      tYear < 2000 ||
+      tYear > 2100
+    ) {
+      return NextResponse.json({ error: 'Periode bulan/tahun tujuan tidak valid' }, { status: 400 });
     }
     
     const targetName = getSheetName(tMonth, tYear);
@@ -124,13 +142,13 @@ export async function POST(request: NextRequest) {
     for (const item of items) {
       targetValues.push([
         item.no,
-        item.pengeluaran,
+        sanitizeSheetText(item.pengeluaran),
         item.budget,
         '', // Aktual empty
         `=C${rowIndex}-D${rowIndex}`, // Selisih formula
         `=IF(E${rowIndex}=0, TRUE, FALSE)`, // Checklist formula automatic when selisih is 0
-        item.posisi,
-        item.keterangan
+        sanitizeSheetText(item.posisi),
+        sanitizeSheetText(item.keterangan)
       ]);
       rowIndex++;
     }
@@ -155,10 +173,19 @@ export async function POST(request: NextRequest) {
     targetValues.push(['', '', '', '', '', '', '', '']);
     rowIndex++;
 
-    // Nabung Row
-    const nabungFormulaExpr = sourceSavingsInfo?.incomeFormula || '19340000';
-    const nabungTargetAccount = sourceSavingsInfo?.targetAccount || 'Blu BCA Saving';
-    const nabungKeterangan = sourceSavingsInfo?.keterangan || 'Pocket Tabungan & Investasi';
+    // Nabung Row (validate arithmetic formula strictly to prevent formula injection)
+    let nabungFormulaExpr = '19340000';
+    if (sourceSavingsInfo?.incomeFormula) {
+      const candidateExpr = String(sourceSavingsInfo.incomeFormula)
+        .replace(/^=/, '')
+        .replace(/[^0-9+\-*/().\s]/g, '')
+        .trim();
+      if (candidateExpr && evaluateArithmeticExpression(candidateExpr) !== null) {
+        nabungFormulaExpr = candidateExpr;
+      }
+    }
+    const nabungTargetAccount = sanitizeSheetText(sourceSavingsInfo?.targetAccount || 'Blu BCA Saving');
+    const nabungKeterangan = sanitizeSheetText(sourceSavingsInfo?.keterangan || 'Pocket Tabungan & Investasi');
     targetValues.push([
       'Nabung',
       '',
@@ -186,12 +213,14 @@ export async function POST(request: NextRequest) {
     rowIndex++;
     
     for (const pos of positionsToGenerate) {
+      const safePosLabel = sanitizeSheetText(pos, 100);
+      const safePosCriteria = escapeSheetFormulaString(pos);
       targetValues.push([
         '',
-        pos,
-        `=SUMIF(G${itemsStartRow}:G${itemsEndRow}, "${pos}", C${itemsStartRow}:C${itemsEndRow})`,
-        `=SUMIF(G${itemsStartRow}:G${itemsEndRow}, "${pos}", D${itemsStartRow}:D${itemsEndRow})`,
-        `=SUMIF(G${itemsStartRow}:G${itemsEndRow}, "${pos}", E${itemsStartRow}:E${itemsEndRow})`,
+        safePosLabel,
+        `=SUMIF(G${itemsStartRow}:G${itemsEndRow}, "${safePosCriteria}", C${itemsStartRow}:C${itemsEndRow})`,
+        `=SUMIF(G${itemsStartRow}:G${itemsEndRow}, "${safePosCriteria}", D${itemsStartRow}:D${itemsEndRow})`,
+        `=SUMIF(G${itemsStartRow}:G${itemsEndRow}, "${safePosCriteria}", E${itemsStartRow}:E${itemsEndRow})`,
         '', '', ''
       ]);
       rowIndex++;
@@ -226,7 +255,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Error generating sheet:', error);
     return NextResponse.json(
-      { error: 'Failed to generate sheet', details: error.message },
+      { error: 'Gagal membuat lembar bulan baru' },
       { status: 500 }
     );
   }

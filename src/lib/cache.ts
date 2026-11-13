@@ -1,8 +1,10 @@
 interface CacheEntry<T> {
   data: T;
   expiresAt: number;
+  updatedAt: number;
 }
 
+const MAX_CACHE_ENTRIES = 200;
 const memoryCache = new Map<string, CacheEntry<any>>();
 
 export const cache = {
@@ -16,10 +18,34 @@ export const cache = {
     return entry.data as T;
   },
 
+  /**
+   * Prevents ?refresh=true abuse from exhausting Google Sheets API quota (60 req/min).
+   * Returns cached value if the key was refreshed within cooldownSeconds.
+   */
+  getRecentForRefresh<T>(key: string, cooldownSeconds: number = 10): T | null {
+    const entry = memoryCache.get(key);
+    if (!entry) return null;
+    const now = Date.now();
+    if (now > entry.expiresAt) {
+      memoryCache.delete(key);
+      return null;
+    }
+    if (now - entry.updatedAt < cooldownSeconds * 1000) {
+      return entry.data as T;
+    }
+    return null;
+  },
+
   set<T>(key: string, data: T, ttlSeconds: number = 45): void {
+    const now = Date.now();
+    if (!memoryCache.has(key) && memoryCache.size >= MAX_CACHE_ENTRIES) {
+      const oldestKey = memoryCache.keys().next().value;
+      if (oldestKey) memoryCache.delete(oldestKey);
+    }
     memoryCache.set(key, {
       data,
-      expiresAt: Date.now() + ttlSeconds * 1000,
+      expiresAt: now + ttlSeconds * 1000,
+      updatedAt: now,
     });
   },
 

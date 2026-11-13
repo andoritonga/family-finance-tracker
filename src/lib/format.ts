@@ -9,17 +9,24 @@ export function formatRupiah(n: number): string {
   return idrFormatter.format(Number.isFinite(n) ? n : 0);
 }
 
+const MAX_SAFE_RUPIAH = 1_000_000_000_000; // Rp 1 Triliun upper bound
+
 export function parseRupiah(value: string | number | null | undefined): number {
-  if (typeof value === 'number') return Number.isFinite(value) ? Math.round(value) : 0;
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) return 0;
+    const rounded = Math.round(value);
+    return Math.max(-MAX_SAFE_RUPIAH, Math.min(MAX_SAFE_RUPIAH, rounded));
+  }
   if (!value) return 0;
   const trimmed = String(value).trim();
   if (!trimmed) return 0;
   const isNegative = trimmed.startsWith('-') || (trimmed.startsWith('(') && trimmed.endsWith(')'));
-  const digits = trimmed.replace(/[^0-9]/g, '');
+  const digits = trimmed.replace(/[^0-9]/g, '').slice(0, 15);
   if (!digits) return 0;
   const parsed = parseInt(digits, 10);
   if (isNaN(parsed)) return 0;
-  return isNegative ? -parsed : parsed;
+  const bounded = Math.min(MAX_SAFE_RUPIAH, parsed);
+  return isNegative ? -bounded : bounded;
 }
 
 /**
@@ -89,13 +96,28 @@ export function evaluateArithmeticExpression(expr: string): number | null {
 }
 
 /**
- * Prevents Google Sheets formula injection on USER_ENTERED text fields.
+ * Prevents Google Sheets formula injection on USER_ENTERED text fields
+ * and enforces safe character length & control-character stripping.
  */
-export function sanitizeSheetText(input: string): string {
-  const trimmed = (input || '').trim();
-  if (/^[=+\-@]/.test(trimmed)) {
-    return `'${trimmed}`;
+export function sanitizeSheetText(input: unknown, maxLength: number = 200): string {
+  const normalized = String(input ?? '')
+    .replace(/[\r\n\t]+/g, ' ')
+    .trim()
+    .slice(0, maxLength);
+  if (/^[=+\-@|]/.test(normalized)) {
+    return `'${normalized}`;
   }
-  return trimmed;
+  return normalized;
+}
+
+/**
+ * Safely escapes double quotes inside Google Sheets string literals (e.g. SUMIF criteria).
+ */
+export function escapeSheetFormulaString(input: string): string {
+  return String(input || '')
+    .replace(/[\r\n\t]+/g, ' ')
+    .trim()
+    .slice(0, 100)
+    .replace(/"/g, '""');
 }
 
